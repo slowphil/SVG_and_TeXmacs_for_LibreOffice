@@ -1,4 +1,4 @@
-# SVG and TeXmacs extension for LibreOffice ([direct download]())
+# SVG and TeXmacs extension for LibreOffice ([direct download](https://github.com/slowphil/SVG_and_TeXmacs_for_LibreOffice/releases/latest))
 
 Although LO has a pretty good support for SVG, when you copy a drawing in Inkscape it is disapointingly pasted as a bitmap in LO and it is not even possible to use "paste special" to get the vector format.
 
