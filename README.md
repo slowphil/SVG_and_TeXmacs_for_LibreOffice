@@ -26,6 +26,8 @@ For the TeXmacs equation editor feature, you need both TeXmacs and pdftocairo (f
 ## Technical details
 This is my first LO extension and it uses a mix of Basic and Python scripts: 
 It is easier to hack with Basic as you find much more examples and help, on the other hand Python was more convenient for implementing a couple of things (like for instance working around a bug in the interfacing to windows clipboard in LO).
+### Building the extension
+Clone the repo, modify the code if desired. Then, open the .odt file in LibreOffice and follow the instructions inside.
 
 ## Known issues
 - Inserting SVG in rescued documents leads to an error: save them first.
