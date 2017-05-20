@@ -37,3 +37,4 @@ Clone the repo, modify the code if desired. Then, open the .odt file in LibreOff
 ## Credits
 The extension is packaged using [Bernard Marcelly's excellent __Extension Compiler__](https://wiki.openoffice.org/wiki/Extensions_Packager#Extension_Compiler)
 The conversion of MathType equations is based on the converter originaly included in the [Jex equation editor](http://levine.sscnet.ucla.edu/general/software/jex/), which was ported from Java to Python and adapted.
+The TeXmacs icon is based on an original design by Massimiliano Gubinelli.
