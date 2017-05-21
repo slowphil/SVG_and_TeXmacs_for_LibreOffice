@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 """ 
 
 This code extracts the content of Mathtype equations encoded
@@ -33,7 +34,6 @@ __credits__ = ["David K. Levine"]
 __license__ = "GPL v2"
 
 
-from __future__ import print_function
 from Jexmath_mod import *
 from Jexfont_mod import *
 

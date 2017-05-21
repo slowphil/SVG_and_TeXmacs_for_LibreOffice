@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 """ 
 This module is used by Jexmt_mod, See docstring there.
 
@@ -16,7 +18,6 @@ __credits__ = ["David K. Levine"]
 __license__ = "GPL v2"
 
 """ generated source for module Jexfont """
-from __future__ import print_function
 #from Jexmath_mod import *
 mFontPLAIN = 0
 mFontITALIC = 2
