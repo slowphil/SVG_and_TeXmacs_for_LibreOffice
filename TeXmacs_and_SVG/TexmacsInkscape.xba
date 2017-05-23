@@ -5,8 +5,8 @@
 &apos;Interface with pythons scripts
 &apos;******************************
 Global g_MasterScriptProvider
-'Const URL_Main = &quot;vnd.sun.star.script:&quot;
-'Const URL_Args = &quot;?language=Python&amp;location=user&quot;
+&apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
+&apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
 Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.1.oxt|python|&quot;
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
@@ -123,7 +123,7 @@ Sub edit_texmacs()
 		 &apos;it&apos;s an svg image
 		 dim sImageUrl, fileStream, sfa
 		 &apos; Set full name
-		 sImageUrl =ConvertToUrl( oDoc.StringValue &amp; &quot;Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
+		 sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
 		 Dim tempf, os, cURL as String
 		 tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
 		 &apos; xray tempf
@@ -169,7 +169,7 @@ Function extract_wmf() as string
     FileCopy(sImageUrl, tempf.Uri)
   ElseIf (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
 
-     sImageUrl =ConvertToUrl( oDoc.StringValue &amp; &quot;Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.wmf&quot;)
+     sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.wmf&quot;)
      &apos;this file does not exist in an imported pptx
      If sfa.exists(sImageUrl) then
         FileCopy(sImageUrl, tempf.Uri)
@@ -486,7 +486,7 @@ sub insert_svg (cURL as String)
 	&apos;Finally place the svg file in the &quot;transient document&quot; so that we can copy it back before the doc is saved, just in case...
 	&apos;Actually, this is only needed in writer, because in draw/impress we could recover the image data using GraphicStream
 	dim sImageUrl, sImage, sfa, tdocpath, filestream, n
-	tdocpath = oDoc.StringValue &amp; &quot;Pictures/&quot;
+	tdocpath = &quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot;
 	sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
 	If not sfa.exists(tdocpath) Then
 		&apos; this fails with an &apos;General input/output error&apos; if it is a rescued document
