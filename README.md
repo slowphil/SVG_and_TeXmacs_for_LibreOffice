@@ -31,8 +31,8 @@ Clone the repo, modify the code if desired. Then, open the .odt file in LibreOff
 
 ## Known issues
 - Inserting SVG in rescued documents leads to an error: save them first.
-- SVG images are well handled in native LO document formats. However, when saved as MS Office documents, LO converts SVG images to lousy bitmaps. When exporting to these formats it is possible to preserve the vector character by converting SVG to metafile images, but any equation then becomes non-editable... 
-
+- SVG images are well handled in native LO document formats (.odt, .odg, .odp). However, when saved as MS Office documents, LO converts SVG images to lousy bitmaps. When exporting to these formats it is possible to preserve the vector character by converting SVG to metafile images, but any equation then becomes non-editable...
+- If the characters in the SVG images appear too bold, you have a bad version of FreeType and need to upgrade (or downgrade if it's easier). This problem occurs for instance in Ubuntu 16.04 which uses FreeType 2.6.1 and it can be solved by using [FreeType 2.7 from this PPA](https://launchpad.net/~no1wantdthisname/+archive/ubuntu/ppa)
 
 ## Credits
 The extension is packaged using [Bernard Marcelly's excellent __Extension Compiler__](https://wiki.openoffice.org/wiki/Extensions_Packager#Extension_Compiler)
