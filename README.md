@@ -2,7 +2,7 @@
 
 Although LO has a pretty good support for SVG, when you copy a drawing in Inkscape it is disapointingly pasted as a bitmap in LO and it is not even possible to use "paste special" to get the vector format.
 
-__The purpose of this extension is enable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).
+__The purpose of this extension is to enable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).
 
 In addition, such SVG support makes it possible to use __GNU [TeXmacs](http://www.texmacs.org)__ as a __fully GUI equation editor__ for LO (TeXmacs' name is trully misleading as *it does **not** require knowing any TeX/LaTeX*). Such equations appear as SVG images but they are fully re-editable.
 
@@ -37,4 +37,4 @@ Clone the repo, modify the code if desired. Then, open the .odt file in LibreOff
 ## Credits
 The extension is packaged using [Bernard Marcelly's excellent __Extension Compiler__](https://wiki.openoffice.org/wiki/Extensions_Packager#Extension_Compiler)
 The conversion of MathType equations is based on the converter originaly included in the [Jex equation editor](http://levine.sscnet.ucla.edu/general/software/jex/), which was ported from Java to Python and adapted.
-The TeXmacs icon is based on an original design by Massimiliano Gubinelli.
+The icon of the TeXmacs toolbar button is based on an original design by Massimiliano Gubinelli.
