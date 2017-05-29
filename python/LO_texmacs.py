@@ -63,7 +63,10 @@ tm_file="<TeXmacs|1.99.5>\n\n<style|generic>\n\n<\\body>\n %s \n\n</body>\n\n<\\
 tm_dummy_equation="<\equation*>\n    1+1\n  </equation*>\n"
 tm_no_equation="\\;\n"
 tm_scheme_cmd_line_args =  '(begin (lazy-plugin-force) (equ-edit-cmdline) %s) '
-tm_extra_latex_cmd_line_args=  "(delayed (:idle 000)(insert (latex->texmacs (parse-latex \\\"\\\\[ %s \\\\]\\\"))))"
+if IS_WINDOWS :
+    tm_extra_latex_cmd_line_args=  "(delayed (:idle 000)(insert (latex->texmacs (parse-latex \\\"\\\\[ %s \\\\]\\\"))))"
+else :
+    tm_extra_latex_cmd_line_args=  '(delayed (:idle 000)(insert (latex->texmacs (parse-latex \"\\\\[ %s \\\\]\"))))'
 tm_no_style=""
 
 #------------------------------------------------------------------------------
@@ -285,3 +288,4 @@ g_exportedScripts = tm_equation,
 if __name__ == u'__main__':
     tm_equation(r"\frac{a}{b}", "", "", "")
     
+
