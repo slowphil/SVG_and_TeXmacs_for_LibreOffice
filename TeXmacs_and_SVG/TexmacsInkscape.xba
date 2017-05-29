@@ -527,7 +527,7 @@ Sub copy_svg
 	End If
 	dim sImageUrl, fileStream, sfa
 	&apos; Set full name
-	sImageUrl = ConvertToUrl( oDoc.StringValue &amp; &quot;Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
+	sImageUrl = ConvertToUrl(&quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
   &apos; On windows, in LO, com.sun.star.datatransfer.clipboard.SystemClipboard only accepts standard (= windows predefined) datatypes 
   &apos; and &quot;image/svg+xml&quot; is not part of them... We work around this issue by accessing the clipboard through python, talking directly with the OS 
    	&apos; Windows
