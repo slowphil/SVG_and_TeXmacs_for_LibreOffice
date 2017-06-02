@@ -492,7 +492,7 @@ class Jexmt:
             if tt == 11:
                 print("FRAC ")
                 if (ivar & 0x06) != 0 : #fraction with slash
-                    db = DivisionBox(self.nextReal(), CharBox('/'), self.nextReal()) #SpaceBox("/") ?
+                    db = DivisionBox(self.nextReal(), CharBox(ord('/')), self.nextReal()) #SpaceBox("/") ?
                 else :
                     db = DivisionBox(m0 = self.nextReal(), m2 = self.nextReal())
                 self.getNull(ttmpl)
