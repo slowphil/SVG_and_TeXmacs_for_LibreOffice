@@ -165,12 +165,15 @@ Function extract_wmf() as string
 
 
   If InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0 Then &apos;it&apos;s an OLE object
-    sImageUrl =ConvertToUrl( oDoc.StringValue &amp; oShape.EmbeddedObject.EntryName)
-    FileCopy(sImageUrl, tempf.Uri)
+    if InStr(oShape.EmbeddedObject.Dbg_Properties, &quot;EntryName&quot;) &lt;&gt;0 Then
+      sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; oDoc.RuntimeUID &amp; &quot;/&quot; &amp; oShape.EmbeddedObject.EntryName)
+      FileCopy(sImageUrl, tempf.Uri)
+    Else
+      Exit Function
+    End If
   ElseIf (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
 
      sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.wmf&quot;)
-     &apos;this file does not exist in an imported pptx
      If sfa.exists(sImageUrl) then
         FileCopy(sImageUrl, tempf.Uri)
      else
@@ -340,8 +343,13 @@ sub insert_svg (cURL as String)
 			memsize = False
 
 			dim vscale as Double,hscale as Double
-			vscale = oShape.size.height/ oShape.Graphic.Size100thMM.height
-			hscale = oShape.size.width/ oShape.Graphic.Size100thMM.width
+			if oShape.Graphic.Size100thMM.height * oShape.Graphic.Size100thMM.width &lt;&gt; 0 then
+			  vscale = oShape.size.height/ oShape.Graphic.Size100thMM.height
+			  hscale = oShape.size.width/ oShape.Graphic.Size100thMM.width
+			else 
+			  vscale = 1
+			  hscale = 1
+			endif
 		else
 			replacing = False
 			undo.enterUndoContext(&quot;Inserting SVG&quot;)
@@ -360,10 +368,21 @@ sub insert_svg (cURL as String)
 			&quot;ShadowYDistance&quot;,&quot;SizeProtect&quot;,&quot;Title&quot;, _
 			&quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
 			&apos; don&apos;t try to memorize Zorder : causes crashes when undoing
+			dim fullproplist, actualproplist(UBound(proplist)) as string, j
+			fullproplist = oShape.Dbg_Properties
+			j = 0
 			for i = LBound(proplist) to UBound(proplist)
 				&apos;print i, proplist(i)
-				props(i) = oShape.getPropertyValue(proplist(i))
+				if InStr( fullproplist, proplist(i) ) &lt;&gt;0 then
+				  actualproplist(j) = proplist(i)
+				  props(j) = oShape.getPropertyValue(proplist(i))
+				  j = j+1
+				endif
+				
 			next
+			if j&gt;0 then 
+			   ReDim Preserve actualproplist(j-1) As String
+			endif
 			oShape.getParent().Remove(oShape)
 			&apos; dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
 		endif
@@ -380,7 +399,11 @@ sub insert_svg (cURL as String)
 				&apos;vscale = vsize / oShapeSize.Height
 				&apos;oShapeSize.Height = vsize
 				&apos;oShapeSize.Width = vscale*oShapeSize.Width
-				hscale = hsize / oShapeSize.Width
+				if  oShapeSize.Width &lt;&gt; 0 then 
+				  hscale = hsize / oShapeSize.Width
+				else 
+				  hscale =1
+				endif
 				oShapeSize.Height = hscale*oShapeSize.Height
 				oShapeSize.Width = hsize
 			else
@@ -392,8 +415,8 @@ sub insert_svg (cURL as String)
 			&apos;restore properties
 			oSHape.Position = oldposition
 
-			for i = LBound(proplist) to UBound(proplist)
-				oShape.setPropertyValue(proplist(i),props(i))
+			for i = LBound(actualproplist) to UBound(actualproplist)
+				oShape.setPropertyValue(actualproplist(i),props(i))
 			next
 
 		endif
