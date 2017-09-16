@@ -25,7 +25,6 @@ class LinkedList(deque):
       super(LinkedList, self).__init__()
 
     def add(self, i, j = None):
-      """ generated source for method add """
       if j== None :
           return self.append(i)
       else :
@@ -35,25 +34,23 @@ class LinkedList(deque):
           return o
 
     def addAll(self, j):
-      """ generated source for method add """
       for elem in j :
           self.append(elem)
       return true
         
     def get(self, j):
-      """ generated source for method add """
       return self[j]
 
     def getLast(self):
-      """ generated source for method add """
       return self[-1]
 
     def removeLast(self):
-      """ generated source for method add """
-      return self.pop()
+      if len(self) > 0 :
+        return self.pop()
+      else :
+        return EmptyBox()
 
     def remove(self, j):
-      """ generated source for method add """
       self.rotate(-j)
       o = self.popleft()
       self.rotate(j)
