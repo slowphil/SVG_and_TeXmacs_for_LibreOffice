@@ -46,8 +46,16 @@ IS_WINDOWS = (platform.system() == "Windows")
 #IS_MACOS= sys.platform.startswith('darwin')
 
 if IS_WINDOWS :
-    programfiles = os.environ.get('PROGRAMFILES')
-    texmacs_path = os.path.join(programfiles, 'TeXmacs','bin', 'texmacs.exe')
+    def Is64Windows():
+        return 'PROGRAMFILES(X86)' in os.environ
+
+    def GetProgramFiles32():
+        if Is64Windows():
+            return os.environ['PROGRAMFILES(X86)']
+        else:
+            return os.environ['PROGRAMFILES']
+
+    texmacs_path = os.path.join(GetProgramFiles32(), 'TeXmacs','bin', 'texmacs.exe')
     if not(os.path.isfile(texmacs_path)):
         print("TeXmacs not found in the usual location:\n"+texmacs_path+"\nCannot continue, sorry.")
         raise SystemExit()
