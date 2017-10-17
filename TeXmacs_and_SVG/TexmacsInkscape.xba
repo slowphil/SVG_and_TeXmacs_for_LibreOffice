@@ -363,10 +363,10 @@ sub insert_svg (cURL as String)
 			dim proplist() as String, props(16) as variant, i%, oldposition
 			&apos;xray oShape
 			oldposition = oShape.Position
-			proplist = Array( &quot;Description&quot;,&quot;IsMirrored&quot;,&quot;LayerID&quot;,&quot;Name&quot;,&quot;Printable&quot;, _
+			proplist = Array( &quot;Description&quot;,&quot;IsMirrored&quot;,&quot;Name&quot;,&quot;Printable&quot;, _
 			&quot;RotateAngle&quot;,&quot;Shadow&quot;,&quot;ShadowColor&quot;,&quot;ShadowTransparence&quot;,&quot;ShadowXDistance&quot;, _
 			&quot;ShadowYDistance&quot;,&quot;SizeProtect&quot;,&quot;Title&quot;, _
-			&quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
+			&quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;&quot;LayerID&quot;,,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
 			&apos; don&apos;t try to memorize Zorder : causes crashes when undoing
 			dim fullproplist, actualproplist(UBound(proplist)) as string, j
 			fullproplist = oShape.Dbg_Properties
@@ -416,6 +416,7 @@ sub insert_svg (cURL as String)
 			oSHape.Position = oldposition
 
 			for i = LBound(actualproplist) to UBound(actualproplist)
+			&apos;msgbox(actualproplist(i),0,&quot;actualproplist(i)&quot;)
 				oShape.setPropertyValue(actualproplist(i),props(i))
 			next
 
