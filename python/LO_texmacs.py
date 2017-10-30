@@ -32,16 +32,6 @@ from xml.etree import ElementTree as etree
 
 import socket
 
-try:
-    from html import unescape  # python 3.4+
-except ImportError:
-    try:
-        from html.parser import HTMLParser  # python 3.x (<3.4)
-    except ImportError:
-        from HTMLParser import HTMLParser  # python 2.x
-    unescape = HTMLParser().unescape
-
-
 IS_WINDOWS = (platform.system() == "Windows")
 #IS_MACOS= sys.platform.startswith('darwin')
 
@@ -61,6 +51,20 @@ if IS_WINDOWS :
         raise SystemExit()
 
 else : texmacs_path ='texmacs' #texmacs needs to be in the path!
+
+import codecs        
+def string_unescape(s):
+    """
+etree.parse uses the encoding specified in the xml file (UTF8)
+However when the svg is created, texmacs uses Cork encoding and escapes
+the characters above 128 (for instance é => \xe9 ) and some special characters (&,<,>...)
+so that the texmacs code recorded by texmacs
+and read back by this python code in LO are not immediatly consistent.
+Here, we take care that these characters are properly translated back to texmacs
+(note also the .encode when writing the file content)
+    """
+    #return str(codecs.escape_decode(bytes(s, "utf-8").decode("us-ascii"))[0],"iso-8859-1")
+    return bytes(s, 'utf8').decode('unicode_escape')
 
 TEXTEXT_NS = u"http://www.iki.fi/pav/software/textext/"
 TEXMACS_NS = u"http://www.texmacs.org/"
@@ -94,8 +98,8 @@ def tm_equation(latex_code, svg_file, tm_equation, tm_style):
         latex_code, tm_equation, tm_style = get_equation_code(svg_file)
         scheme_cmd = tm_scheme_cmd_line_args % ''
     elif tm_equation != "" :
-        tm_equation = unescape(bytes(tm_equation, 'utf8').decode('unicode_escape'))
-        tm_style = unescape(bytes(tm_style, 'utf8').decode('unicode_escape'))
+        tm_equation = string_unescape(tm_equation)
+        tm_style = string_unescape(tm_style)
         scheme_cmd = tm_scheme_cmd_line_args % ''
     elif latex_code == '' :
         tm_equation, tm_style = (tm_dummy_equation, tm_no_style)
@@ -127,9 +131,9 @@ def get_equation_code(svg_name):
         return ('', tm_dummy_equation, tm_no_style)
     elif '{%s}texmacscode'%TEXMACS_NS in node.attrib: # that group contains texmacs data
         
-        tm_equation = bytes(node.attrib.get('{%s}texmacscode' % TEXMACS_NS, ''), 'utf8').decode('unicode_escape')
+        tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_NS, ''))
         if '{%s}texmacsstyle'%TEXMACS_NS in node.attrib: #further contains styling info
-            tm_style = bytes(node.attrib.get('{%s}texmacsstyle' % TEXMACS_NS, ''), 'utf8').decode('unicode_escape')
+            tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_NS, ''))
         else:
             tm_style =''
         return ('', tm_equation, tm_style)
@@ -140,9 +144,9 @@ def get_equation_code(svg_name):
 
 
 def call_texmacs(scheme_cmd, equ, styl, latex):
-    f_tmp = open(tmp_name, 'w') # create a temporaty tm file that texmacs will edit
+    f_tmp = open(tmp_name, 'wb') # create a temporaty tm file that texmacs will edit
     try:
-        f_tmp.write(tm_file %( equ, styl)) #insert equation to be edited in file (blank in textext case)
+        f_tmp.write((tm_file %( equ, styl)).encode("iso-8859-1")) #insert equation to be edited in file (blank in textext case)
     finally:
         f_tmp.close()
 
@@ -294,6 +298,7 @@ def try_remove(filename):
 g_exportedScripts = tm_equation,
 
 if __name__ == u'__main__':
-    tm_equation(r"\frac{a}{b}", "", "", "")
+    tm_equation("", "/tmp/test.svg", "", "")
+    #tm_equation(r"\frac{a}{b}", "", "", "")
     
 
