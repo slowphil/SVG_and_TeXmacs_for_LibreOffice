@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 *******************************************************************************
-* Texmacs extension for LibreOffice/openOffice
+* Texmacs extension for LibreOffice
 * COPYRIGHT  : (C) 2017 Philippe JOYEZ and the TeXmacs team
 *******************************************************************************
 * This software falls under the GNU general public license version 3 or later.
@@ -22,6 +23,14 @@ newly created svg image is returned (if any).
 
 Communication with texmacs is established either though a socket, or
 using pipes.
+
+*****************************
+
+this code is known to run with LO versions > 5.3 (which use python 3)
+
+Note that the extension also comprises a few star basic scripts which
+complete its functionality : inserting images in documents, and extracting
+them for re-edition, copy/paste, converting mathtype equations ...
 
 """
 #------------------------------------------------------------------------------
@@ -52,7 +61,7 @@ if IS_WINDOWS :
 
 else : texmacs_path ='texmacs' #texmacs needs to be in the path!
 
-import codecs        
+#import codecs        
 def string_unescape(s):
     """
 etree.parse uses the encoding specified in the xml file (UTF8)
@@ -91,7 +100,8 @@ tmp_name = os.path.join(tmp_path,tmp_base)
 
 
 def tm_equation(latex_code, svg_file, tm_equation, tm_style):
-    """Perform the effect: create/modify embedded equation"""
+    """create the temporary tm file according to the data provided on input
+       then call texmacs"""
     latex_code = latex_code.replace("\\","\\\\")
     if svg_file != '' :
         # Find equation and how to modify it
@@ -120,7 +130,7 @@ def tm_equation(latex_code, svg_file, tm_equation, tm_style):
         return ""
 
 def get_equation_code(svg_name):
-    """retrieve texmacs code for embedded equation"""
+    """retrieve texmacs code for embedded equation in svg file"""
     f = open(svg_name, 'r')
     tree = etree.parse(f)
     f.close()
@@ -144,6 +154,7 @@ def get_equation_code(svg_name):
 
 
 def call_texmacs(scheme_cmd, equ, styl, latex):
+    """" handle various ways of calling and communicating with texmacs """
     f_tmp = open(tmp_name, 'wb') # create a temporaty tm file that texmacs will edit
     try:
         f_tmp.write((tm_file %( equ, styl)).encode("iso-8859-1")) #insert equation to be edited in file (blank in textext case)
@@ -295,9 +306,11 @@ def try_remove(filename):
     elif os.path.isdir(filename):
         os.rmdir(filename)
 
+"""functions exposed to LO"""
 g_exportedScripts = tm_equation,
 
 if __name__ == u'__main__':
+    """allow runing the script standalone for debugging"""
     tm_equation("", "/tmp/test.svg", "", "")
     #tm_equation(r"\frac{a}{b}", "", "", "")
     
