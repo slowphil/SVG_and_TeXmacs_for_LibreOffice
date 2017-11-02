@@ -21,6 +21,7 @@ After installlation, in Writer, Draw and Impress you'll have a toolbar with 3 bu
 
 ## Requirements
 This extension is known to work in LibreOffice 5.3 in both Linux and Windows. It is possibly usable in OpenOffice, but this was not tested at all. If the extension fails to install properly, make sure you have Libreoffice-script-provider-python installed.
+
 For the TeXmacs equation editor feature, you need both TeXmacs and pdftocairo (from Poppler tools). In windows, [get both together here](https://github.com/slowphil/mingw-w64-texmacs/releases/latest). For Linux, I strongly recommend you use these [TeXmacs packages](https://software.opensuse.org/download.html?project=home:slowphil:texmacs-devel&package=texmacs) available for most distributions instead of the static TeXmacs build found at texmacs.org. 
 
 ## Technical details
