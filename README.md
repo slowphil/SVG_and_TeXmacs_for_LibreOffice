@@ -20,9 +20,9 @@ After installlation, in Writer, Draw and Impress you'll have a toolbar with 3 bu
 
 
 ## Requirements
-This extension is known to work in LibreOffice 5.3 in both Linux and Windows. It is possibly usable in OpenOffice, but this was not tested at all. If the extension fails to install properly, make sure you have `libreoffice-script-provider-python` installed.
+This extension is known to work in LibreOffice ⩾ 5.3 in both Linux and Windows. It is possibly usable in OpenOffice, but this was not tested at all. If the extension fails to install properly, make sure you have `libreoffice-script-provider-python` installed.
 
-For the TeXmacs equation editor feature, you need both TeXmacs and pdftocairo (from Poppler tools). In windows, [get both together here](https://github.com/slowphil/mingw-w64-texmacs/releases/latest). For Linux, I strongly recommend you use these [TeXmacs packages](https://software.opensuse.org/download.html?project=home:slowphil:texmacs-devel&package=texmacs) available for most distributions instead of the static TeXmacs build found at texmacs.org. 
+For the TeXmacs equation editor feature to work nicely with LibreOffice, a [patch](https://github.com/slowphil/mingw-w64-texmacs/blob/master/equation-editor-plugin.patch)ed version of TeXmacs is presently strongly recommended (when plugins will be able to have their own preference tab, the patch will be integrated into the "trunk"). You'll also need `pdftocairo` (from Poppler tools). In windows, [get both together here](https://github.com/slowphil/mingw-w64-texmacs/releases/latest). For Linux, this [AppImage](https://download.opensuse.org/repositories/home:/slowphil:/texmacs-devel/AppImage/texmacs-latest-x86_64.AppImage) contains the [patch](https://build.opensuse.org/package/view_file/home:slowphil:texmacs-devel/texmacs/equation-editor-plugin.patch) and is thus presently recommended over the TeXmacs build found at texmacs.org.
 
 ## Technical details
 This is my first LO extension and it uses a mix of Basic and Python scripts: 
