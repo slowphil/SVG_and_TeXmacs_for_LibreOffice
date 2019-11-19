@@ -11,71 +11,70 @@ Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.1.oxt|python|&quo
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
 Function getMasterScriptProvider()
-    if not isObject(g_MasterScriptProvider) then
-       s = &quot;com.sun.star.script.provider.MasterScriptProviderFactory&quot;
-       g_MasterScriptProvider = createUnoService(s).createScriptProvider(&quot;&quot;)
-   end if
-   getMasterScriptProvider = g_MasterScriptProvider
+  if not isObject(g_MasterScriptProvider) then
+    s = &quot;com.sun.star.script.provider.MasterScriptProviderFactory&quot;
+    g_MasterScriptProvider = createUnoService(s).createScriptProvider(&quot;&quot;)
+  end if
+  getMasterScriptProvider = g_MasterScriptProvider
 End Function
 
 Function PythonCallTexmacs(tmpsvg as String, latex as String, _
             optional texmacscode as string,  optional texmacsstyle as string)
-    if ismissing(texmacscode) then
-        texmacscode = &quot;&quot;
-        texmacsstyle = &quot;&quot;
-    end if
-    scriptName = &quot;tm_equation&quot;
-    fullURI = URL_Main &amp; &quot;LO_texmacs.py$&quot; &amp; scriptName &amp; URL_Args
-    m = getMasterScriptProvider()
-    s = m.GetScript(fullURI)
-    secondArg = Array()
-    thirdArg = Array()
-    &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-    result = s.invoke(Array(latex, tmpsvg, texmacscode, texmacsstyle), secondArg, thirdArg)
-    PythonCallTexmacs = ConvertToURL(result)
+  if ismissing(texmacscode) then
+    texmacscode = &quot;&quot;
+    texmacsstyle = &quot;&quot;
+  end if
+  scriptName = &quot;tm_equation&quot;
+  fullURI = URL_Main &amp; &quot;LO_texmacs.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  result = s.invoke(Array(latex, tmpsvg, texmacscode, texmacsstyle), secondArg, thirdArg)
+  PythonCallTexmacs = ConvertToURL(result)
 End Function
 
 Function PythonMTtoLatex(tmpwmf as String)
-
-    scriptName = &quot;MTtoLatex&quot;
-    fullURI = URL_Main &amp; &quot;Jexmt_mod.py$&quot; &amp; scriptName &amp; URL_Args
-    m = getMasterScriptProvider()
-    s = m.GetScript(fullURI)
-    secondArg = Array()
-    thirdArg = Array()
-    &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-    result = s.invoke(Array(tmpwmf), secondArg, thirdArg)
-    PythonMTtoLatex = result
+  scriptName = &quot;MTtoLatex&quot;
+  fullURI = URL_Main &amp; &quot;Jexmt_mod.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  result = s.invoke(Array(tmpwmf), secondArg, thirdArg)
+  PythonMTtoLatex = result
 End Function
 
 Function PythonWinPaste(typelist as variant, tmpfile as string)
-    scriptName = &quot;getclipboardtype&quot;
-    fullURI = URL_Main &amp; &quot;win32_clipboard.py$&quot; &amp; scriptName &amp; URL_Args
-    m = getMasterScriptProvider()
-    s = m.GetScript(fullURI)
-    secondArg = Array()
-    thirdArg = Array()
-    &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-    result = s.invoke(Array(typelist, tmpfile), secondArg, thirdArg)
-    PythonWinPaste = result
+  scriptName = &quot;getclipboardtype&quot;
+  fullURI = URL_Main &amp; &quot;win32_clipboard.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  result = s.invoke(Array(typelist, tmpfile), secondArg, thirdArg)
+  PythonWinPaste = result
 End Function
 
 Function PythonWinCopy (mimetype as String, data as any)
-    &apos;print isarray(data)
-    &apos;dim  str , i 
-    &apos;str = &quot;&quot;
-    &apos;for i = Lbound(data) to Ubound(data)
-      &apos;str = str &amp; chr(data(i))
-    &apos;next i
-    &apos;print str
-    scriptName = &quot;putonclipboard&quot;
-    fullURI = URL_Main &amp; &quot;win32_clipboard.py$&quot; &amp; scriptName &amp; URL_Args
-    m = getMasterScriptProvider()
-    s = m.GetScript(fullURI)
-    secondArg = Array()
-    thirdArg = Array()
-    &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-    s.invoke(Array(mimetype, data), secondArg, thirdArg)
+  &apos;print isarray(data)
+  &apos;dim  str , i 
+  &apos;str = &quot;&quot;
+  &apos;for i = Lbound(data) to Ubound(data)
+    &apos;str = str &amp; chr(data(i))
+  &apos;next i
+  &apos;print str
+  scriptName = &quot;putonclipboard&quot;
+  fullURI = URL_Main &amp; &quot;win32_clipboard.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  s.invoke(Array(mimetype, data), secondArg, thirdArg)
 End Function
 
 &apos;************************************
@@ -90,55 +89,70 @@ Sub edit_texmacs()
   oDocCtrl = oDoc.getCurrentController()
   dim ret as String
   If isEmpty(oDocCtrl.selection()) Then
-     &apos;Nothing selected : new equation
-     ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;)
+    &apos;Nothing selected : new equation
+    ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;)
   Else
-	  Dim oSelection as Variant, oShape as Variant
-	  oSelection = oDocCtrl.getSelection()
-	  oShape = oSelection(0)
-	  If (oShape.ImplementationName=&quot;SwXTextRange&quot;) then
-	    &apos; Selection is text, presumably it&apos;s latex code we want to convert (in writer)
-		 ret = PythonCallTexmacs(&quot;&quot; , oShape.String )
-	  Elseif ((oShape.ImplementationName &lt;&gt; &quot;SvxShapeText&quot;) and _
-		 ( oShape.ImplementationName &lt;&gt; &quot;SwXTextGraphicObject&quot;)) _
-		 or InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 then
-	   &apos; Is selection is NOT some kind of graphics shape we handle : do not destroy it
-		 MsgBox &quot;Selection is not recognized as an equation&quot;
-		 Exit Sub
-	  elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
-	    &apos; Selection is wmf or OLE, presumably a Mathtype equation
-		dim MTlatex
-		MTlatex = extract_wmf()
-		ret = PythonCallTexmacs(&quot;&quot;, MTlatex)
-	  &apos;ElseIf oShape.UserDefinedAttributes.hasByName(&quot;texmacscode&quot;) then
-		 &apos;it&apos;s a gdi or svg with texmacs code
-		 &apos;on return it will be an svg in both cases
-		 &apos; TODO handle TexMath in the same way
-		 &apos;dim tmcode, tmstyle
-		 &apos;tmcode =  oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
-		 &apos;tmstyle =  oShape.UserDefinedAttributes.getByName(&quot;texmacsstyle&quot;).value
-		 &apos;ret = PythonCallTexmacs(&quot;&quot;, &quot;&quot;, tmcode, tmstyle )
-		 &apos;FIXME the above does not work : it confuses/mixes the different equations, does not remember the last value...
-	  elseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
-		 &apos;it&apos;s an svg image
-		 dim sImageUrl, fileStream, sfa
-		 &apos; Set full name
-		 sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
-		 Dim tempf, os, cURL as String
-		 tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
-		 &apos; xray tempf
-		 cURL = tempf.Uri
-		 FileCopy(sImageUrl,cURL)
-		 &apos;print tempf.ResourceName
-		 ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;)
-	  Else
-		 MsgBox &quot;Sorry, cannot reedit this type of image&quot;
-		 Exit Sub
-	  endif
+    Dim oSelection as Variant, oShape as Variant
+    oSelection = oDocCtrl.getSelection()
+    oShape = oSelection(0)
+    If (oShape.ImplementationName=&quot;SwXTextRange&quot;) then
+      &apos; Selection is text, presumably it&apos;s latex code we want to convert (in writer)
+      ret = PythonCallTexmacs(&quot;&quot; , oShape.String )
+    Elseif ((oShape.ImplementationName &lt;&gt; &quot;SvxShapeText&quot;) and _
+        ( oShape.ImplementationName &lt;&gt; &quot;SwXTextGraphicObject&quot;)) _
+        or InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 then
+      &apos; Is selection is NOT some kind of graphics shape we handle : do not destroy it
+      MsgBox &quot;Selection is not recognized as an equation&quot;
+      Exit Sub
+    elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
+      &apos; Selection is wmf or OLE, presumably a Mathtype equation
+      dim MTlatex
+      MTlatex = extract_wmf()
+      ret = PythonCallTexmacs(&quot;&quot;, MTlatex)
+      &apos;ElseIf oShape.UserDefinedAttributes.hasByName(&quot;texmacscode&quot;) then
+      &apos;it&apos;s a gdi or svg with texmacs code
+      &apos;on return it will be an svg in both cases
+      &apos; TODO handle TexMath in the same way
+      &apos;dim tmcode, tmstyle
+      &apos;tmcode =  oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
+      &apos;tmstyle =  oShape.UserDefinedAttributes.getByName(&quot;texmacsstyle&quot;).value
+      &apos;ret = PythonCallTexmacs(&quot;&quot;, &quot;&quot;, tmcode, tmstyle )
+      &apos;FIXME the above does not work : it confuses/mixes the different equations, does not remember the last value...
+    elseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
+      &apos;it&apos;s an svg image
+      dim tmpsvg
+      Dim tempf, cURL as String
+      tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
+      save_tmp_svg(oShape,tempf)
+    Else
+      MsgBox &quot;Sorry, cannot reedit this type of image&quot;
+      Exit Sub
+    endif
   endif
   &apos; print ret
   if ret &lt;&gt; &quot;&quot; then
-	insert_svg(ret)
+  insert_svg(ret)
+  endif
+end sub
+
+sub save_tmp_svg(oShape as object,tempf as object )
+  dim sImageUrl, fileStream, sfa
+  &apos; Set full name
+  Dim cURL as String
+  sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+  &apos;xray sfa
+  cURL = tempf.Uri
+  sfa.openFileWrite(cURL)
+  if ( oShape.ImplementationName = &quot;SwXTextGraphicObject&quot;) then
+    &apos;images in writer do not have .GraphicStream property, need first to copy it to .GraphicObjectShape
+    Dim oShapetmp
+    oShapetmp = ThisComponent.createInstance(&quot;com.sun.star.drawing.GraphicObjectShape&quot;)
+    ThisComponent.getDrawPage().add(oShapetmp)
+    oShapetmp.graphic = oShape.graphic
+    sfa.writefile(cURL, oShapetmp.GraphicStream)
+    ThisComponent.getDrawPage().remove(oShapetmp)
+  else
+    sfa.writefile(cURL, oShape.GraphicStream)
   endif
 end sub
 
@@ -172,356 +186,322 @@ Function extract_wmf() as string
       Exit Function
     End If
   ElseIf (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
-
-     sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.wmf&quot;)
-     If sfa.exists(sImageUrl) then
-        FileCopy(sImageUrl, tempf.Uri)
-     else
-
-
-     &apos; WMFs can also be accessed directly through a Stream:
-       dim fileStream, os , wmfdata() as Byte
-       fileStream=oShape.GraphicStream
-       fileStream.readSomeBytes( wmfdata() , fileStream.available())
-       os= tempf.getOutputStream ()
-       os.writeBytes( wmfdata() )
-       os.flush()
-       os.closeoutput()
-&apos;       sImageUrl = tempf.Uri
-    endif
+    &apos; WMFs can also be accessed directly through a Stream:
+    sfa.openFileWrite(tempf.Uri)
+    sfa.writefile(tempf.Uri, oShapetmp.GraphicStream)
 
   Else
     Exit Function
   End If
 
-  &apos;print sImageUrl, &quot;  exists?:&quot;,sfa.exists(sImageUrl)
-  &apos;ExampleDir( oDoc.StringValue)
-  &apos;FileCopy(tempf.Uri, &quot;file:///tmp/test.wmf&quot;)
   dim latex$
-  &apos;xray tempf
-  &apos;print tempf.Uri
   latex = PythonMTtoLatex(tempf.ResourceName)
   extract_wmf() = latex
 end Function
 
 Function get_svg_tm_params( cUrl as string) as variant
-	&apos; extract texmacs parameters strings from svg (if any)
-    dim sfa, filestream, n
-    sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+  &apos; extract texmacs parameters strings from svg (if any)
+  dim sfa, filestream, n
+  sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
 
+  &apos;print cUrl
+  fileStream =sfa.openFileRead(cUrl)
 
-    &apos;print cUrl
-    fileStream =sfa.openFileRead(cUrl)
-
-    dim myTextFile, svgText as String
-    myTextFile = createUnoService(&quot;com.sun.star.io.TextInputStream&quot;)
-    myTextFile.InputStream = fileStream
-    myTextFile.Encoding = &quot;UTF-8&quot;
-    Do while not myTextFile.IsEOF
-      svgText =  svgText &amp; myTextFile.readLine &amp; chr$(10)
-    Loop
-    filestream.closeinput()
-    myTextFile.closeinput()
-    If InStr( svgText, &quot;texmacscode&quot;)=0 then
-       get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
-       exit Function
-    end if
-    svgText = Mid( svgText, InStr( svgText, &quot;&lt;g&quot;))
-    svgText =Mid( svgText, 1, InStr( svgText, &quot;&gt;&quot;)+1)
-    If InStr( svgText, &quot;texmacscode&quot;)=0 then
-       get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
-       exit Function
-    end if
-    Dim str1() as String, str2(4) as String
-    dim texmacscode, texmasstyle,  texmacsbaseline$, latex, preamble
-     texmacscode = &quot;&quot;
-     texmasstyle =&quot;&quot;
-     texmacsbaseline = &quot;0.0&quot;
-     latex = &quot;&quot;
-     preamble = &quot;&quot;
-    str1 = Split(svgText,&quot;&quot;&quot;&quot;)
-    for i= 0 to Ubound(str1)
-        if InStr( str1(i), &quot;texmacscode&quot;) then
-           texmacscode=str1(i+1)
-        elseif InStr( str1(i), &quot;texmasstyle&quot;) then
-           texmasstyle=str1(i+1)
-        elseif InStr( str1(i), &quot;texmacsbaseline&quot;) then
-           texmacsbaseline=str1(i+1)
-       elseif InStr( str1(i), &quot;latex&quot;) then
-           latex=str1(i+1)
-        elseif InStr( str1(i), &quot;preamble&quot;) then
-           preamble=str1(i+1)
-        endif
-    next
-    str2=Array(texmacscode, texmasstyle,  texmacsbaseline, latex, preamble)
-    get_svg_tm_params = str2
+  dim myTextFile, svgText as String
+  myTextFile = createUnoService(&quot;com.sun.star.io.TextInputStream&quot;)
+  myTextFile.InputStream = fileStream
+  myTextFile.Encoding = &quot;UTF-8&quot;
+  Do while not myTextFile.IsEOF
+    svgText =  svgText &amp; myTextFile.readLine &amp; chr$(10)
+  Loop
+  filestream.closeinput()
+  myTextFile.closeinput()
+  If InStr( svgText, &quot;texmacscode&quot;)=0 then
+     get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
+     exit Function
+  end if
+  svgText = Mid( svgText, InStr( svgText, &quot;&lt;g&quot;))
+  svgText = Mid( svgText, 1, InStr( svgText, &quot;&gt;&quot;)+1)
+  If InStr( svgText, &quot;texmacscode&quot;)=0 then
+    get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
+    exit Function
+  end if
+  Dim str1() as String, str2(4) as String
+  dim texmacscode, texmasstyle,  texmacsbaseline$, latex, preamble
+  texmacscode = &quot;&quot;
+  texmasstyle =&quot;&quot;
+  texmacsbaseline = &quot;0.0&quot;
+  latex = &quot;&quot;
+  preamble = &quot;&quot;
+  str1 = Split(svgText,&quot;&quot;&quot;&quot;)
+  for i= 0 to Ubound(str1)
+    if InStr( str1(i), &quot;texmacscode&quot;) then
+      texmacscode=str1(i+1)
+    elseif InStr( str1(i), &quot;texmasstyle&quot;) then
+      texmasstyle=str1(i+1)
+    elseif InStr( str1(i), &quot;texmacsbaseline&quot;) then
+      texmacsbaseline=str1(i+1)
+    elseif InStr( str1(i), &quot;latex&quot;) then
+      latex=str1(i+1)
+    elseif InStr( str1(i), &quot;preamble&quot;) then
+      preamble=str1(i+1)
+    endif
+  next
+  str2=Array(texmacscode, texmasstyle,  texmacsbaseline, latex, preamble)
+  get_svg_tm_params = str2
 End Function
 
 Sub getxml_with_calc()
-print  Val(&quot;10.33&quot;)
-STOP
-
-Dim cURL as String
-cURL=tempf.Uri
-Print cURL
-&apos;this should work except for the bug https://bugs.documentfoundation.org/show_bug.cgi?id=104989
-&apos;dim svc, XML_String, Lipsum
-&apos;svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
-&apos;XML_String = svc.callFunction(&quot;WEBSERVICE&quot;, array(cURL))
-&apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
-&apos;array(XML_String, &quot;/*[name()=&apos;svg&apos;]/*[name()=&apos;g&apos;]/@*[local-name()=&apos;texmacscode&apos;]&quot;))
-&apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
-&apos;array(XML_String, &quot;//@*[local-name()=&apos;texmacsbaseline&apos;]&quot;))
-&apos;Print Lipsum
+  print  Val(&quot;10.33&quot;)
+  STOP
+  
+  Dim cURL as String
+  cURL=tempf.Uri
+  Print cURL
+  &apos;this should work except for the bug https://bugs.documentfoundation.org/show_bug.cgi?id=104989
+  &apos;dim svc, XML_String, Lipsum
+  &apos;svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
+  &apos;XML_String = svc.callFunction(&quot;WEBSERVICE&quot;, array(cURL))
+  &apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
+  &apos;array(XML_String, &quot;/*[name()=&apos;svg&apos;]/*[name()=&apos;g&apos;]/@*[local-name()=&apos;texmacscode&apos;]&quot;))
+  &apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
+  &apos;array(XML_String, &quot;//@*[local-name()=&apos;texmacsbaseline&apos;]&quot;))
+  &apos;Print Lipsum
 
 End Sub
 
 &apos;************************************
-&apos;Inset SVG is the last step of paste
+&apos;Insert SVG is the last step of paste
 &apos; and texmacs routines
 &apos;************************************
 
 sub insert_svg (cURL as String)
 &apos; insert the svg drawing
-    if cURL = &quot;&quot; then
-		&apos;nothing to do
-		exit sub
-	end if
+  if cURL = &quot;&quot; then
+    &apos;nothing to do
+    exit sub
+  end if
 
-	Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
- 	oDoc = ThisComponent
-	oDocCtrl = oDoc.getCurrentController()
-	doctype = GetDocumentType( oDoc)
-	&apos;print &quot;doctype&quot;, doctype
+  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
+  oDoc = ThisComponent
+  oDocCtrl = oDoc.getCurrentController()
+  doctype = GetDocumentType( oDoc)
+  &apos;print &quot;doctype&quot;, doctype
 
-    Dim oSelection as Variant, oShape as Variant, replacing as Boolean, memsize, vsize, hsize
+  Dim oSelection as Variant, oShape as Variant, replacing as Boolean, memsize, vsize, hsize
+  oSelection = oDocCtrl.getSelection()
+  oShape = oSelection(0)
+  Dim document, dispatcher, tempf, os
+  document   = oDocCtrl.Frame
+  dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
+  Dim oShapeSize as Variant
+
+  &apos;define an &quot;undo context&quot; so that we can undo the insertion in a single step
+  &apos; aka making the macro &quot;atomic&quot; wrt to undo
+  &apos; the actual undo string is defined below, according to what we do exactly
+  Dim undo As Object
+  undo = ThisComponent.UndoManager
+
+  dim params(4) as string
+  params() = get_svg_tm_params(cURL)
+
+
+  if ((doctype= &quot;sdraw&quot;) or (doctype= &quot;simpress&quot;)) then
+    &apos;if the selection was an svg preserve how it was scaled wrt original size
+    &apos;if it was a wmf preserve width
+    dim args1(3) as new com.sun.star.beans.PropertyValue
+    args1(0).Name = &quot;FileName&quot;
+    args1(0).Value = cURL
+    args1(1).Name = &quot;FilterName&quot;
+    args1(1).Value = &quot;&lt;All formats&gt;&quot;
+    args1(2).Name = &quot;AsLink&quot;
+    args1(2).Value = false
+    args1(3).Name = &quot;Style&quot;
+    args1(3).Value = &quot;Graphics&quot;
+
+    if isempty(oShape) then
+      replacing = False
+      undo.enterUndoContext(&quot;Inserting SVG&quot;)
+    elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or _
+        (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
+      &apos;it&apos;s probably a Mathtype equation
+      replacing = True
+      undo.enterUndoContext(&quot;Replacing WMF/OLE&quot;)
+      memsize = True
+      vsize = oShape.size.height
+      hsize = oShape.size.width
+
+    ElseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
+      replacing = True
+      undo.enterUndoContext(&quot;Replacing SVG&quot;)
+      memsize = False
+
+      dim vscale as Double,hscale as Double
+      if oShape.Graphic.Size100thMM.height * oShape.Graphic.Size100thMM.width &lt;&gt; 0 then
+        vscale = oShape.size.height/ oShape.Graphic.Size100thMM.height
+        hscale = oShape.size.width/ oShape.Graphic.Size100thMM.width
+      else 
+        vscale = 1
+        hscale = 1
+      endif
+    else
+      replacing = False
+      undo.enterUndoContext(&quot;Inserting SVG&quot;)
+    endif
+    if replacing  then    &apos;memorize a series of properties to transfer to the new image
+
+      &apos;print vscale, hscale &apos;oShape.size.height , oShape.Graphic.Size100thMM.height &apos;only i writer: oShape.actualsize.height
+      &apos;print &quot;old size &quot;,  oShape.size.height ,  oShape.size.width
+      &apos;print &quot;original size &quot;,oShape.Graphic.Size100thMM.height, oShape.Graphic.Size100thMM.width
+
+      dim proplist() as String, props(16) as variant, i%, oldposition
+      &apos;xray oShape
+      oldposition = oShape.Position
+      proplist = Array( &quot;Description&quot;,&quot;IsMirrored&quot;,&quot;Name&quot;,&quot;Printable&quot;, _
+      &quot;RotateAngle&quot;,&quot;Shadow&quot;,&quot;ShadowColor&quot;,&quot;ShadowTransparence&quot;,&quot;ShadowXDistance&quot;, _
+      &quot;ShadowYDistance&quot;,&quot;SizeProtect&quot;,&quot;Title&quot;, _
+      &quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;&quot;LayerID&quot;,,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
+      &apos; don&apos;t try to memorize Zorder : causes crashes when undoing
+      dim fullproplist, actualproplist(UBound(proplist)) as string, j
+      fullproplist = oShape.Dbg_Properties
+      j = 0
+      for i = LBound(proplist) to UBound(proplist)
+        &apos;print i, proplist(i)
+        if InStr( fullproplist, proplist(i) ) &lt;&gt;0 then
+          actualproplist(j) = proplist(i)
+          props(j) = oShape.getPropertyValue(proplist(i))
+          j = j+1
+        endif
+        
+      next
+      if j&gt;0 then 
+         ReDim Preserve actualproplist(j-1) As String
+      endif
+      oShape.getParent().Remove(oShape)
+      &apos; dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
+    endif
+
+    &apos;in draw inserts a new drawing (that&apos;s why we deleted the selection)
+    dispatcher.executeDispatch(document, &quot;.uno:InsertGraphic&quot;, &quot;&quot;, 0, args1())
+    &apos;select newly inserted image
     oSelection = oDocCtrl.getSelection()
     oShape = oSelection(0)
-    Dim document, dispatcher, tempf, os
-    document   = oDocCtrl.Frame
-    dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
-    Dim oShapeSize as Variant
+    if replacing then
+      &apos; Get actual image size
+      oShapeSize = oShape.Graphic.Size100thMM
+      if memsize then &apos;restore vert size, scale h size
+        &apos;vscale = vsize / oShapeSize.Height
+        &apos;oShapeSize.Height = vsize
+        &apos;oShapeSize.Width = vscale*oShapeSize.Width
+        if  oShapeSize.Width &lt;&gt; 0 then 
+          hscale = hsize / oShapeSize.Width
+        else 
+          hscale =1
+        endif
+        oShapeSize.Height = hscale*oShapeSize.Height
+        oShapeSize.Width = hsize
+      else
+        oShapeSize.Width = oShapeSize.Width*hscale
+        oShapeSize.Height = oShapeSize.Height*vscale
+      endif
+      oShape.setSize(oShapeSize)
 
-	&apos;define an &quot;undo context&quot; so that we can undo the insertion in a single step
-	&apos; aka making the macro &quot;atomic&quot; wrt to undo
-	&apos; the actual undo string is defined below, according to what we do exactly
-	Dim undo As Object
-	undo = ThisComponent.UndoManager
+      &apos;restore properties
+      oSHape.Position = oldposition
 
-	dim params(4) as string
-	params() = get_svg_tm_params(cURL)
+      for i = LBound(actualproplist) to UBound(actualproplist)
+      &apos;msgbox(actualproplist(i),0,&quot;actualproplist(i)&quot;)
+        oShape.setPropertyValue(actualproplist(i),props(i))
+      next
 
+    endif
 
-	if ((doctype= &quot;sdraw&quot;) or (doctype= &quot;simpress&quot;)) then
-        &apos;if the selection was an svg preserve how it was scaled wrt original size
-		&apos;if it was a wmf preserve width
-		dim args1(3) as new com.sun.star.beans.PropertyValue
-		args1(0).Name = &quot;FileName&quot;
-		args1(0).Value = cURL
-		args1(1).Name = &quot;FilterName&quot;
-		args1(1).Value = &quot;&lt;All formats&gt;&quot;
-		args1(2).Name = &quot;AsLink&quot;
-		args1(2).Value = false
-		args1(3).Name = &quot;Style&quot;
-		args1(3).Value = &quot;Graphics&quot;
+  elseif doctype= &quot;swriter&quot; then
+    &apos;xray oShape
+    if  oShape.ImplementationName = &quot;SwXTextGraphicObject&quot;  then
+      undo.enterUndoContext(&quot;Replacing Image&quot;)
+  
+      dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
+    else
+      undo.enterUndoContext(&quot;Inserting SVG&quot;)
+    endif
+  
+    dim oVC, oCursor
+    oVC = oDocCtrl.getViewCursor
+    &apos;xray oVC
+    oCurs = oVC.getText.createTextCursorByRange(oVC)
+    oCurs.SetString(&quot;&quot;) &apos;clear current selection
+    &apos;xray  oCursor
+  
+  
+    Dim oShapetmp
+    &apos;Dim oGraph     &apos;The graphic object is text content.
+    Dim oProvider  &apos;GraphicProvider service.
+    Dim oText
+  
+    oShapetmp = oDoc.createInstance(&quot;com.sun.star.drawing.GraphicObjectShape&quot;)
+    oShape = oDoc.createInstance(&quot;com.sun.star.text.GraphicObject&quot;)
+  
+    oDoc.getDrawPage().add(oShapetmp)
+  
+    oProvider = createUnoService(&quot;com.sun.star.graphic.GraphicProvider&quot;)
+  
+    Dim oProps(0) as new com.sun.star.beans.PropertyValue
+    oProps(0).Name  = &quot;URL&quot;
+    oProps(0).Value =  cURL
+  
+    oShapetmp.Graphic = oProvider.queryGraphic(oProps())
+    oShape.graphic = oShapetmp.graphic
+    oShape.AnchorType = com.sun.star.text.TextContentAnchorType.AS_CHARACTER
+    &apos;Dim oShapeSize as Variant
+    oShapeSize = oShapetmp.Graphic.Size100thMM
+    &apos;oShapeSize = oShapetmp.actualsize
+    oShape.setSize(oShapeSize)
+  
+    oText= oCurs.getText()
+    oText.insertTextContent(oCurs, oShape, false)
+    oDoc.getDrawPage().remove(oShapetmp)
+  
+  
+    oShape.IsSyncHeightToWidth=True
+    oShape.TopMargin = 0
+    oShape.BottomMargin = 0
+    oShape.VertOrient = 0
+    &apos;adjust baseline
+    dim baselineoffset as Double
+    baselineoffset = 1- val(params(2))
+    oShape.VertOrientPosition = - baselineoffset * oShape.Size.Height
 
-		if isempty(oShape) then
-			replacing = False
-			undo.enterUndoContext(&quot;Inserting SVG&quot;)
-		elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or _
-			(oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
-			&apos;it&apos;s an probably a Mathtype equation
-			replacing = True
-			undo.enterUndoContext(&quot;Replacing WMF/OLE&quot;)
-			memsize = True
-			vsize = oShape.size.height
-			hsize = oShape.size.width
-
-		ElseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
-			replacing = True
-			undo.enterUndoContext(&quot;Replacing SVG&quot;)
-			memsize = False
-
-			dim vscale as Double,hscale as Double
-			if oShape.Graphic.Size100thMM.height * oShape.Graphic.Size100thMM.width &lt;&gt; 0 then
-			  vscale = oShape.size.height/ oShape.Graphic.Size100thMM.height
-			  hscale = oShape.size.width/ oShape.Graphic.Size100thMM.width
-			else 
-			  vscale = 1
-			  hscale = 1
-			endif
-		else
-			replacing = False
-			undo.enterUndoContext(&quot;Inserting SVG&quot;)
-		endif
-		if replacing  then    &apos;memorize a series of properties to transfer to the new image
-
-			&apos;print vscale, hscale &apos;oShape.size.height , oShape.Graphic.Size100thMM.height &apos;only i writer: oShape.actualsize.height
-			&apos;print &quot;old size &quot;,  oShape.size.height ,  oShape.size.width
-			&apos;print &quot;original size &quot;,oShape.Graphic.Size100thMM.height, oShape.Graphic.Size100thMM.width
-
-			dim proplist() as String, props(16) as variant, i%, oldposition
-			&apos;xray oShape
-			oldposition = oShape.Position
-			proplist = Array( &quot;Description&quot;,&quot;IsMirrored&quot;,&quot;Name&quot;,&quot;Printable&quot;, _
-			&quot;RotateAngle&quot;,&quot;Shadow&quot;,&quot;ShadowColor&quot;,&quot;ShadowTransparence&quot;,&quot;ShadowXDistance&quot;, _
-			&quot;ShadowYDistance&quot;,&quot;SizeProtect&quot;,&quot;Title&quot;, _
-			&quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;&quot;LayerID&quot;,,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
-			&apos; don&apos;t try to memorize Zorder : causes crashes when undoing
-			dim fullproplist, actualproplist(UBound(proplist)) as string, j
-			fullproplist = oShape.Dbg_Properties
-			j = 0
-			for i = LBound(proplist) to UBound(proplist)
-				&apos;print i, proplist(i)
-				if InStr( fullproplist, proplist(i) ) &lt;&gt;0 then
-				  actualproplist(j) = proplist(i)
-				  props(j) = oShape.getPropertyValue(proplist(i))
-				  j = j+1
-				endif
-				
-			next
-			if j&gt;0 then 
-			   ReDim Preserve actualproplist(j-1) As String
-			endif
-			oShape.getParent().Remove(oShape)
-			&apos; dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
-		endif
-
-		&apos;in draw inserts a new drawing (that&apos;s why we deleted the selection)
-		dispatcher.executeDispatch(document, &quot;.uno:InsertGraphic&quot;, &quot;&quot;, 0, args1())
-		&apos;select newly inserted image
-		oSelection = oDocCtrl.getSelection()
-		oShape = oSelection(0)
-		if replacing then
-			&apos; Get actual image size
-			oShapeSize = oShape.Graphic.Size100thMM
-			if memsize then &apos;restore vert size, scale h size
-				&apos;vscale = vsize / oShapeSize.Height
-				&apos;oShapeSize.Height = vsize
-				&apos;oShapeSize.Width = vscale*oShapeSize.Width
-				if  oShapeSize.Width &lt;&gt; 0 then 
-				  hscale = hsize / oShapeSize.Width
-				else 
-				  hscale =1
-				endif
-				oShapeSize.Height = hscale*oShapeSize.Height
-				oShapeSize.Width = hsize
-			else
-				oShapeSize.Width = oShapeSize.Width*hscale
-				oShapeSize.Height = oShapeSize.Height*vscale
-			endif
-			oShape.setSize(oShapeSize)
-
-			&apos;restore properties
-			oSHape.Position = oldposition
-
-			for i = LBound(actualproplist) to UBound(actualproplist)
-			&apos;msgbox(actualproplist(i),0,&quot;actualproplist(i)&quot;)
-				oShape.setPropertyValue(actualproplist(i),props(i))
-			next
-
-		endif
-
-	elseif doctype= &quot;swriter&quot; then
-		  &apos;xray oShape
-		  if  oShape.ImplementationName = &quot;SwXTextGraphicObject&quot;  then
-			  undo.enterUndoContext(&quot;Replacing Image&quot;)
-
-			  dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
-		  else
-			  undo.enterUndoContext(&quot;Inserting SVG&quot;)
-		  endif
-
-		  dim oVC, oCursor
-		  oVC = oDocCtrl.getViewCursor
-		  &apos;xray oVC
-		  oCurs = oVC.getText.createTextCursorByRange(oVC)
-		  oCurs.SetString(&quot;&quot;) &apos;clear current selection
-		  &apos;xray  oCursor
-
-
-		  Dim oShapetmp
-		  &apos;Dim oGraph     &apos;The graphic object is text content.
-		  Dim oProvider  &apos;GraphicProvider service.
-		  Dim oText
-
-		  oShapetmp = oDoc.createInstance(&quot;com.sun.star.drawing.GraphicObjectShape&quot;)
-		  oShape = oDoc.createInstance(&quot;com.sun.star.text.GraphicObject&quot;)
-
-		  oDoc.getDrawPage().add(oShapetmp)
-
-		  oProvider = createUnoService(&quot;com.sun.star.graphic.GraphicProvider&quot;)
-
-		  Dim oProps(0) as new com.sun.star.beans.PropertyValue
-		  oProps(0).Name  = &quot;URL&quot;
-		  oProps(0).Value =  cURL
-
-		  oShapetmp.Graphic = oProvider.queryGraphic(oProps())
-		  oShape.graphicurl = oShapetmp.graphicurl
-		  oShape.AnchorType = com.sun.star.text.TextContentAnchorType.AS_CHARACTER
-		  &apos;Dim oShapeSize as Variant
-		  oShapeSize = oShapetmp.Graphic.Size100thMM
-		  &apos;oShapeSize = oShapetmp.actualsize
-		  oShape.setSize(oShapeSize)
-
-		  oText= oCurs.getText()
-		  oText.insertTextContent(oCurs, oShape, false)
-		  oDoc.getDrawPage().remove(oShapetmp)
-
-
-		  oShape.IsSyncHeightToWidth=True
-		  oShape.TopMargin = 0
-		  oShape.BottomMargin = 0
-		  oShape.VertOrient = 0
-		  &apos;adjust baseline
-		  dim baselineoffset as Double
-		  baselineoffset = 1- val(params(2))
-		  oShape.VertOrientPosition = - baselineoffset * oShape.Size.Height
-
-	end if
+  end if
 
   &apos;********************************
-	&apos;the svg is inserted now finalize
-	&apos;first if it&apos;s a Texmacs equation, add UserDefinedAttributes
-	if params(0) &lt;&gt; &quot;&quot; then
-		Dim oUserData
-		Dim oUserAttr as new com.sun.star.xml.AttributeData
-		&apos;xray oUserAtrr
-		oUserAttr.Type =&quot;CDATA&quot;
-		oUserData = oShape.UserDefinedAttributes
-		dim str2(4) as string
-		str2 = Array(&quot;texmacscode&quot;,&quot;texmacsstyle&quot;,  &quot;texmacsbaseline&quot;, &quot;latex&quot;, &quot;preamble&quot;)
-		for i = 0 to 4
-		   If NOT oUserData.hasByName(str2(i)) then
-				oUserAttr.Value = params(i)
-				oUserData.insertByName(str2(i),oUserAttr)
-			End If
-		next i
-		oShape.UserDefinedAttributes = oUserData
-		&apos;xray oUserData
-		&apos;oUser = oUserData.ElementNames
-		&apos;for i= 0 to UBound(oUser)
-		&apos;	oDisp =oDisp &amp; oUser(i) &amp; Chr$(10)
-		&apos;next i
-		&apos;msgbox(oDisp,0,&quot;UserDefinedAttributes&quot;)
-		&apos;Print oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
-	end if
+  &apos;the svg is inserted now finalize
+  &apos;first if it&apos;s a Texmacs equation, add UserDefinedAttributes
+  if params(0) &lt;&gt; &quot;&quot; then
+    Dim oUserData
+    Dim oUserAttr as new com.sun.star.xml.AttributeData
+    &apos;xray oUserAtrr
+    oUserAttr.Type =&quot;CDATA&quot;
+    oUserData = oShape.UserDefinedAttributes
+    dim str2(4) as string
+    str2 = Array(&quot;texmacscode&quot;,&quot;texmacsstyle&quot;,  &quot;texmacsbaseline&quot;, &quot;latex&quot;, &quot;preamble&quot;)
+    for i = 0 to 4
+      If NOT oUserData.hasByName(str2(i)) then
+        oUserAttr.Value = params(i)
+        oUserData.insertByName(str2(i),oUserAttr)
+      End If
+    next i
+    oShape.UserDefinedAttributes = oUserData
+    &apos;xray oUserData
+    &apos;oUser = oUserData.ElementNames
+    &apos;for i= 0 to UBound(oUser)
+    &apos; oDisp =oDisp &amp; oUser(i) &amp; Chr$(10)
+    &apos;next i
+    &apos;msgbox(oDisp,0,&quot;UserDefinedAttributes&quot;)
+    &apos;Print oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
+  end if
 
-	&apos;Finally place the svg file in the &quot;transient document&quot; so that we can copy it back before the doc is saved, just in case...
-	&apos;Actually, this is only needed in writer, because in draw/impress we could recover the image data using GraphicStream
-	dim sImageUrl, sImage, sfa, tdocpath, filestream, n
-	tdocpath = &quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot;
-	sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
-	If not sfa.exists(tdocpath) Then
-		&apos; this fails with an &apos;General input/output error&apos; if it is a rescued document
-		MkDir ( tdocpath)
-	End If
-	sImage = Mid (oShape.GraphicURL, 28)
-	&apos; Set full name
-	sImageUrl=ConvertToUrl( tdocpath &amp; sImage &amp; &quot;.svg&quot;)
-	FileCopy(cURL, sImageUrl)
-
-	undo.leaveUndoContext
+  undo.leaveUndoContext
 
 end sub
 
@@ -529,97 +509,99 @@ end sub
 &apos;handling of SVG theough the Clipboard
 &apos;*************************************
 
-Global SVGClipboardSource as String
+Global SVGClipboardSource as Variant
 
 Sub copy_svg
-	Dim oDoc as Variant, oDocCtrl as Variant
-	oDoc = ThisComponent
-	oDocCtrl = oDoc.getCurrentController()
+  Dim oDoc as Variant, oDocCtrl as Variant
+  oDoc = ThisComponent
+  oDocCtrl = oDoc.getCurrentController()
 
-	If isEmpty(oDocCtrl.selection()) Then
-		Exit Sub
-	End If
-	Dim oSelection as Variant, oShape as Variant
-	oSelection = oDocCtrl.getSelection()
-	oShape = oSelection(0)
-	&apos;xray oShape
-	If InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 Then
-		Exit Sub
-	End If
-	If not (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
-		Exit Sub
-	End If
-	dim sImageUrl, fileStream, sfa
-	&apos; Set full name
-	sImageUrl = ConvertToUrl(&quot;vnd.sun.star.tdoc:/&quot;&amp; oDoc.RuntimeUID &amp; &quot;/Pictures/&quot; &amp; Mid (oShape.GraphicURL, 28)  &amp; &quot;.svg&quot;)
+  If isEmpty(oDocCtrl.selection()) Then
+    Exit Sub
+  End If
+  Dim oSelection as Variant, oShape as Variant
+  oSelection = oDocCtrl.getSelection()
+  oShape = oSelection(0)
+  &apos;xray oShape
+  If InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 Then
+    Exit Sub
+  End If
+  If not (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
+    Exit Sub
+  End If
+
+  dim fileStream, sfa, tempf
+  tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
+  save_tmp_svg(oShape,tempf)
+
   &apos; On windows, in LO, com.sun.star.datatransfer.clipboard.SystemClipboard only accepts standard (= windows predefined) datatypes 
   &apos; and &quot;image/svg+xml&quot; is not part of them... We work around this issue by accessing the clipboard through python, talking directly with the OS 
-   	&apos; Windows
-	If getGUIType() = 1 Then
-	      sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
-          fileStream = sfa.openFileRead(sImageUrl)
-    	  dim svgdatautf8() as Byte
-	      fileStream.readSomeBytes(svgdatautf8(), fileStream.available())
-          PythonWinCopy(&quot;image/svg+xml&quot;, svgdatautf8() )
-       
-	&apos; Linux or Mac OS X
-	Else 					
 
-
-
-	SVGClipboardSource =  sImageUrl
-	&apos;print   SVGClipboardSource
-	Dim oClip, oTR
-	&apos; create SystemClipboard instance
-	oClip = CreateUnoService(&quot;com.sun.star.datatransfer.clipboard.SystemClipboard&quot;)
-	oTR = createUnoListener(&quot;SVG_&quot;, &quot;com.sun.star.datatransfer.XTransferable&quot;)
-	&apos; set data
-	oClip.setContents(oTR,Null)
-	endif
+    &apos; Windows
+  If getGUIType() = 1 Then
+    sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+    filestream = sfa.openFileRead(tempf.URI)
+    dim svgdatautf8() as Byte
+    fileStream.readSomeBytes(svgdatautf8(), fileStream.available())
+    PythonWinCopy(&quot;image/svg+xml&quot;, svgdatautf8() )
+         
+  &apos; Linux or Mac OS X
+  Else          
+    SVGClipboardSource =  tempf
+    &apos;print   SVGClipboardSource
+    Dim oClip, oTR
+    &apos; create SystemClipboard instance
+    oClip = CreateUnoService(&quot;com.sun.star.datatransfer.clipboard.SystemClipboard&quot;)
+    oTR = createUnoListener(&quot;SVG_&quot;, &quot;com.sun.star.datatransfer.XTransferable&quot;)
+    &apos; set data
+    oClip.setContents(oTR,Null)
+  endif
 end sub
 
 Function SVG_getTransferData(aFlavor as com.sun.star.datatransfer.DataFlavor)
   &apos; get image data
   sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
-  fileStream = sfa.openFileRead(SVGClipboardSource)
-
+  filestream = sfa.openFileRead(SVGClipboardSource.URI)
   &apos;If we put directly utf8 on the clipboard, LO is able to paste it again with the paste_svg macro
   &apos;but it does not transmit anything when requested by other apps. Can&apos;t understand why.
   &apos;OTOH if we convert to String (UTF-16) then we can export to other apps, but LO can&apos;t paste it!
   &apos;=&gt; if we want to handle both situation we need to export both (defining our own Mimetype for internal copy)
   If  (aFlavor.MimeType = &quot;OOinternalSVG&quot;) Then
-	  dim svgdatautf8() as Byte
-	  fileStream.readSomeBytes(svgdatautf8(), fileStream.available())
-	  SVG_getTransferData() = svgdatautf8()
+    dim svgdatautf8() as Byte
+    fileStream.readSomeBytes(svgdatautf8(), fileStream.available())
+    SVG_getTransferData() = svgdatautf8()
 
   elseif (aFlavor.MimeType = &quot;image/svg+xml&quot;) Then
-	  dim myTextFile, svgText as String
-	  myTextFile = createUnoService(&quot;com.sun.star.io.TextInputStream&quot;)
-	  myTextFile.InputStream = fileStream
-	  myTextFile.Encoding = &quot;UTF-8&quot;
-	  Do while not myTextFile.IsEOF
-		  svgText =  svgText &amp; myTextFile.readLine &amp; chr$(10)
-	  Loop
-	  SVG_getTransferData() = svgText
-   EndIf
+    dim myTextFile, svgText as String
+    myTextFile = createUnoService(&quot;com.sun.star.io.TextInputStream&quot;)
+    myTextFile.InputStream = fileStream
+    myTextFile.Encoding = &quot;UTF-8&quot;
+    Do while not myTextFile.IsEOF
+      svgText =  svgText &amp; myTextFile.readLine &amp; chr$(10)
+    Loop
+    SVG_getTransferData() = svgText
+  EndIf
+  if (SVGClipboardSource.ImplementationName = &quot;SwXTextGraphicObject&quot;) then
+    ThisComponent.getDrawPage().remove(oShapetmp)
+  endif   
 End  Function
 
 Function  SVG_getTransferDataFlavors()
-   Dim  aFlavor As new com.sun.star.datatransfer.DataFlavor, _
-        bFlavor As new com.sun.star.datatransfer.DataFlavor
-   aFlavor.MimeType = &quot;OOinternalSVG&quot;
-   aFlavor.HumanPresentableName =&quot;svg image&quot;
-   bFlavor.MimeType = &quot;image/svg+xml&quot;
-   bFlavor.HumanPresentableName =&quot;svg image&quot;
-   SVG_getTransferDataFlavors() = array(aFlavor, bFlavor)
+  Dim  aFlavor As new com.sun.star.datatransfer.DataFlavor, _
+      bFlavor As new com.sun.star.datatransfer.DataFlavor
+  aFlavor.MimeType = &quot;OOinternalSVG&quot;
+  aFlavor.HumanPresentableName =&quot;svg image&quot;
+  bFlavor.MimeType = &quot;image/svg+xml&quot;
+  bFlavor.HumanPresentableName =&quot;svg image&quot;
+  SVG_getTransferDataFlavors() = array(aFlavor, bFlavor)
 End  Function
 
 Function  SVG_isDataFlavorSupported(aFlavor as com.sun.star.datatransfer.DataFlavor) as Boolean
-   If  (aFlavor.MimeType = &quot;image/svg+xml&quot; or aFlavor.MimeType = &quot;OOinternalSVG&quot;)  Then
-     SVG_isDataFlavorSupported = true
-   Else
-     SVG_isDataFlavorSupported = false
-   End  If
+  If  (aFlavor.MimeType = &quot;image/svg+xml&quot; or aFlavor.MimeType = &quot;OOinternalSVG&quot;)  Then
+    SVG_isDataFlavorSupported = true
+  Else
+    SVG_isDataFlavorSupported = false
+  End  If
 End  Function
 
 Sub paste_svg
@@ -628,46 +610,46 @@ Sub paste_svg
   cURL = tempf.Uri
   &apos; On windows, in LO, com.sun.star.datatransfer.clipboard.SystemClipboard can only get standard (= windows predefined) datatypes 
   &apos; and &quot;image/svg+xml&quot; is not part of them... We work around this issue by accessing the clipboard through python, talking directly with the OS 
-   	&apos; Windows
-	If getGUIType() = 1 Then
-        if not PythonWinPaste(array( &quot;image/x-inkscape-svg&quot;, &quot;image/svg+xml&quot;), tempf.ResourceName) then
-           Exit Sub
-        endif
+    &apos; Windows
+  If getGUIType() = 1 Then
+    if not PythonWinPaste(array( &quot;image/x-inkscape-svg&quot;, &quot;image/svg+xml&quot;), tempf.ResourceName) then
+      Exit Sub
+    endif
         
-	&apos; Linux or Mac OS X
-	Else 					
+  &apos; Linux or Mac OS X
+  Else          
 
-	Dim oClip, oClipContents, oTypes
-	Dim i%, iextsvg%, iintsvg%, iselect%
-	iextsvg = -1
-	iselect = -1
-	Dim s$ : s$ = &quot;com.sun.star.datatransfer.clipboard.SystemClipboard&quot;
-	oClip = createUnoService(s$)
-	oClipContents = oClip.getContents()
-	oTypes = oClipContents.getTransferDataFlavors()
+  Dim oClip, oClipContents, oTypes
+  Dim i%, iextsvg%, iintsvg%, iselect%
+  iextsvg = -1
+  iselect = -1
+  Dim s$ : s$ = &quot;com.sun.star.datatransfer.clipboard.SystemClipboard&quot;
+  oClip = createUnoService(s$)
+  oClipContents = oClip.getContents()
+  oTypes = oClipContents.getTransferDataFlavors()
 
-	rem Does the clipboard contain svg?
-	For i=LBound(oTypes) To UBound(oTypes)
-	    If oTypes(i).MimeType = &quot;image/x-inkscape-svg&quot; Then
-			iextsvg = i
-			exit for
-		ElseIf oTypes(i).MimeType = &quot;image/svg+xml&quot; Then
-			iextsvg = i
-			exit for
-        ElseIf oTypes(i).MimeType = &quot;OOinternalSVG&quot; Then
-			iselect = i
-			exit for
-		End If
-	Next
+  rem Does the clipboard contain svg?
+  For i=LBound(oTypes) To UBound(oTypes)
+    If oTypes(i).MimeType = &quot;image/x-inkscape-svg&quot; Then
+      iextsvg = i
+      exit for
+    ElseIf oTypes(i).MimeType = &quot;image/svg+xml&quot; Then
+      iextsvg = i
+      exit for
+    ElseIf oTypes(i).MimeType = &quot;OOinternalSVG&quot; Then
+      iselect = i
+      exit for
+    End If
+  Next
 
-	If ((iselect &lt;0) and (iextsvg &lt;0)) Then
+  If ((iselect &lt;0) and (iextsvg &lt;0)) Then
     Exit Sub
-	elseif (iselect &lt;0) then
-		iselect = iextsvg
-	end If
-	&apos; clipboard contains svg;
-	&apos; save to temporary file then
-	&apos; insert it into the current document
+  elseif (iselect &lt;0) then
+    iselect = iextsvg
+  end If
+  &apos; clipboard contains svg;
+  &apos; save to temporary file then
+  &apos; insert it into the current document
 
   Dim os
   os = tempf.getOutputStream ()
@@ -686,48 +668,48 @@ end sub
 &apos; Author Andrew Pitonyak
 Function GetDocumentType( oDoc as Variant) as String
 
-	Dim sImpress as String, sCalc as String, sDraw as String, sBase as String, sMath as String, sWriter as String
+  Dim sImpress as String, sCalc as String, sDraw as String, sBase as String, sMath as String, sWriter as String
 
-	sCalc    = &quot;com.sun.star.sheet.SpreadsheetDocument&quot;
-	sImpress = &quot;com.sun.star.presentation.PresentationDocument&quot;
-	sDraw    = &quot;com.sun.star.drawing.DrawingDocument&quot;
-	sBase    = &quot;com.sun.star.sdb.DatabaseDocument&quot;
-	sMath    = &quot;com.sun.star.formula.FormulaProperties&quot;
-	sWriter  = &quot;com.sun.star.text.TextDocument&quot;
+  sCalc    = &quot;com.sun.star.sheet.SpreadsheetDocument&quot;
+  sImpress = &quot;com.sun.star.presentation.PresentationDocument&quot;
+  sDraw    = &quot;com.sun.star.drawing.DrawingDocument&quot;
+  sBase    = &quot;com.sun.star.sdb.DatabaseDocument&quot;
+  sMath    = &quot;com.sun.star.formula.FormulaProperties&quot;
+  sWriter  = &quot;com.sun.star.text.TextDocument&quot;
 
-	On Local Error GoTo NO_DOCUMENT_TYPE
+  On Local Error GoTo NO_DOCUMENT_TYPE
 
-	If oDoc.SupportsService(sCalc) Then
-  		GetDocumentType() = &quot;scalc&quot;
-	ElseIf oDoc.SupportsService(sWriter) Then
-		GetDocumentType() = &quot;swriter&quot;
-	ElseIf oDoc.SupportsService(sDraw) Then
-		GetDocumentType() = &quot;sdraw&quot;
-	ElseIf oDoc.SupportsService(sMath) Then
-		GetDocumentType() = &quot;smath&quot;
-	ElseIf oDoc.SupportsService(sImpress) Then
-		GetDocumentType() = &quot;simpress&quot;
-	ElseIf oDoc.SupportsService(sBase) Then
-		GetDocumentType() = &quot;sbase&quot;
-	End If
+  If oDoc.SupportsService(sCalc) Then
+      GetDocumentType() = &quot;scalc&quot;
+  ElseIf oDoc.SupportsService(sWriter) Then
+    GetDocumentType() = &quot;swriter&quot;
+  ElseIf oDoc.SupportsService(sDraw) Then
+    GetDocumentType() = &quot;sdraw&quot;
+  ElseIf oDoc.SupportsService(sMath) Then
+    GetDocumentType() = &quot;smath&quot;
+  ElseIf oDoc.SupportsService(sImpress) Then
+    GetDocumentType() = &quot;simpress&quot;
+  ElseIf oDoc.SupportsService(sBase) Then
+    GetDocumentType() = &quot;sbase&quot;
+  End If
 
-	NO_DOCUMENT_TYPE:
+  NO_DOCUMENT_TYPE:
 
-	If Err &lt;&gt; 0 Then
+  If Err &lt;&gt; 0 Then
 
-  		GetDocumentType = &quot;&quot;
-  		Resume GO_ON
-  		GO_ON:
+      GetDocumentType = &quot;&quot;
+      Resume GO_ON
+      GO_ON:
 
-	End If
+  End If
 
 End Function
 
 
 Sub getUserDefinedAttributes()
-	Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
- 	oDoc = ThisComponent
-	oDocCtrl = oDoc.getCurrentController()
+  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
+  oDoc = ThisComponent
+  oDocCtrl = oDoc.getCurrentController()
     Dim oSelection as Variant, oShape as Variant
     oSelection = oDocCtrl.getSelection()
     oShape = oSelection(0)
@@ -777,10 +759,11 @@ sub converttogdi()&apos;shape as object, frame as object)
     document   = oDocCtrl.Frame
     dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
 
-    	Dispatcher.executeDispatch( oDocCtrl.Frame, &quot;.uno:ConvertIntoMetaFile&quot;, &quot;&quot;, 0, array())
+      Dispatcher.executeDispatch( oDocCtrl.Frame, &quot;.uno:ConvertIntoMetaFile&quot;, &quot;&quot;, 0, array())
       oSelection = oDocCtrl.getSelection()
   oShape = oSelection(0)
   oShape.UserDefinedAttributes = oldUserData
 
 end sub
+
 </script:module>
