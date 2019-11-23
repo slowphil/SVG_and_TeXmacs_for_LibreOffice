@@ -22,12 +22,6 @@ After installation, in Writer, Draw and Impress you'll have a toolbar with 3 but
 ## Requirements
 This extension is known to work in LibreOffice ⩾ 5.3 in both Linux and Windows. It was not tested in OpenOffice and probably won't work without modifications. If the extension fails to install properly, make sure you have `libreoffice-script-provider-python` installed.
 
-Non-backward-compatible changes were made to the [handling of images in LO 6.1](https://tomazvajngerl.blogspot.com/2018/03/improving-image-handling-in-libreoffice.html), which required to make a new version of the extension (otherwise functionally identical):
- 
-For LO⩾6.1 use version 0.2 of the extension.
-
-For LO⩽6.0 use version 0.1 of the extension.
-
 For the TeXmacs equation editor feature to work nicely with LibreOffice, a [patch](https://github.com/slowphil/mingw-w64-texmacs/blob/master/equation-editor-plugin.patch)ed version of TeXmacs is presently strongly recommended (when plugins will be able to have their own preference tab, the patch will be integrated into the "trunk"). You'll also need `pdftocairo` (from Poppler tools). In windows, [get both together here](https://github.com/slowphil/mingw-w64-texmacs/releases/latest). For Linux, [this AppImage](https://download.opensuse.org/repositories/home:/slowphil:/texmacs-devel/AppImage/texmacs-latest-x86_64.AppImage) contains the [patch](https://build.opensuse.org/package/view_file/home:slowphil:texmacs-devel/texmacs/equation-editor-plugin.patch) and is thus presently recommended over the TeXmacs build found at texmacs.org.
 
 ## Technical details
