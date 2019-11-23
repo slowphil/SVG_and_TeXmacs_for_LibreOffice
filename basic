@@ -5,7 +5,7 @@ REM  *****  BASIC  *****
 Global g_MasterScriptProvider
 'Const URL_Main = "vnd.sun.star.script:"
 'Const URL_Args = "?language=Python&location=user"
-Const URL_Main = "vnd.sun.star.script:SVG_and_Texmacs-L-0.1.oxt|python|"
+Const URL_Main = "vnd.sun.star.script:SVG_and_Texmacs-L-0.2.oxt|python|"
 Const URL_Args = "?language=Python&location=user:uno_packages"
 
 Function getMasterScriptProvider()
@@ -75,6 +75,18 @@ Function PythonWinCopy (mimetype as String, data as any)
   s.invoke(Array(mimetype, data), secondArg, thirdArg)
 End Function
 
+Function PythonFixSVG (svgfile as String)
+  scriptName = "fix_inkscape_svg"
+  fullURI = URL_Main & "inkscape_paste_edit.py$" & scriptName & URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  'result = s.invoke(Array("a", "b", "c"), secondArg, thirdArg)
+  result = s.invoke(Array(svgfile), secondArg, thirdArg)
+  'PythonFixSVG = result
+End Function
+
 '************************************
 ' handling texmacs functionality
 ' passing different info to texmacs
@@ -118,10 +130,10 @@ Sub edit_texmacs()
       'FIXME the above does not work : it confuses/mixes the different equations, does not remember the last value...
     elseIf (oShape.Graphic.MimeType = "image/svg+xml") Then
       'it's an svg image
-      dim tmpsvg
       Dim tempf, cURL as String
       tempf = createUnoService("com.sun.star.io.TempFile")
       save_tmp_svg(oShape,tempf)
+      ret = PythonCallTexmacs(tempf.ResourceName,"")
     Else
       MsgBox "Sorry, cannot reedit this type of image"
       Exit Sub
@@ -186,7 +198,7 @@ Function extract_wmf() as string
   ElseIf (oShape.Graphic.MimeType = "image/x-wmf") Then
     ' WMFs can also be accessed directly through a Stream:
     sfa.openFileWrite(tempf.Uri)
-    sfa.writefile(tempf.Uri, oShapetmp.GraphicStream)
+    sfa.writefile(tempf.Uri, oShape.GraphicStream)
 
   Else
     Exit Function
@@ -579,9 +591,6 @@ Function SVG_getTransferData(aFlavor as com.sun.star.datatransfer.DataFlavor)
     Loop
     SVG_getTransferData() = svgText
   EndIf
-  if (SVGClipboardSource.ImplementationName = "SwXTextGraphicObject") then
-    ThisComponent.getDrawPage().remove(oShapetmp)
-  endif   
 End  Function
 
 Function  SVG_getTransferDataFlavors()
@@ -655,6 +664,7 @@ Sub paste_svg
   os.flush()
   os.closeoutput()
   endif
+  PythonFixSVG(tempf.ResourceName)
   insert_svg(cURL)
 end sub
 

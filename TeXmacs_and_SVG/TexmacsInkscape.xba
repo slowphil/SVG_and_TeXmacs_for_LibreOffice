@@ -7,7 +7,7 @@
 Global g_MasterScriptProvider
 &apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
 &apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
-Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.1.oxt|python|&quot;
+Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.2.oxt|python|&quot;
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
 Function getMasterScriptProvider()
@@ -77,6 +77,18 @@ Function PythonWinCopy (mimetype as String, data as any)
   s.invoke(Array(mimetype, data), secondArg, thirdArg)
 End Function
 
+Function PythonFixSVG (svgfile as String)
+  scriptName = &quot;fix_inkscape_svg&quot;
+  fullURI = URL_Main &amp; &quot;inkscape_paste_edit.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  result = s.invoke(Array(svgfile), secondArg, thirdArg)
+  &apos;PythonFixSVG = result
+End Function
+
 &apos;************************************
 &apos; handling texmacs functionality
 &apos; passing different info to texmacs
@@ -120,10 +132,10 @@ Sub edit_texmacs()
       &apos;FIXME the above does not work : it confuses/mixes the different equations, does not remember the last value...
     elseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
       &apos;it&apos;s an svg image
-      dim tmpsvg
       Dim tempf, cURL as String
       tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
       save_tmp_svg(oShape,tempf)
+      ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;)
     Else
       MsgBox &quot;Sorry, cannot reedit this type of image&quot;
       Exit Sub
@@ -188,7 +200,7 @@ Function extract_wmf() as string
   ElseIf (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
     &apos; WMFs can also be accessed directly through a Stream:
     sfa.openFileWrite(tempf.Uri)
-    sfa.writefile(tempf.Uri, oShapetmp.GraphicStream)
+    sfa.writefile(tempf.Uri, oShape.GraphicStream)
 
   Else
     Exit Function
@@ -581,9 +593,6 @@ Function SVG_getTransferData(aFlavor as com.sun.star.datatransfer.DataFlavor)
     Loop
     SVG_getTransferData() = svgText
   EndIf
-  if (SVGClipboardSource.ImplementationName = &quot;SwXTextGraphicObject&quot;) then
-    ThisComponent.getDrawPage().remove(oShapetmp)
-  endif   
 End  Function
 
 Function  SVG_getTransferDataFlavors()
@@ -657,6 +666,7 @@ Sub paste_svg
   os.flush()
   os.closeoutput()
   endif
+  PythonFixSVG(tempf.ResourceName)
   insert_svg(cURL)
 end sub
 
