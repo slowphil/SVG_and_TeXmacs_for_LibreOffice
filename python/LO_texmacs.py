@@ -3,7 +3,7 @@
 """
 *******************************************************************************
 * Texmacs extension for LibreOffice
-* COPYRIGHT  : (C) 2017 Philippe JOYEZ and the TeXmacs team
+* COPYRIGHT  : (C) 2017-2021 Philippe JOYEZ and the TeXmacs team
 *******************************************************************************
 * This software falls under the GNU general public license version 3 or later.
 * It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
@@ -76,7 +76,8 @@ Here, we take care that these characters are properly translated back to texmacs
     return bytes(s, 'utf8').decode('unicode_escape')
 
 TEXTEXT_NS = u"http://www.iki.fi/pav/software/textext/"
-TEXMACS_NS = u"http://www.texmacs.org/"
+TEXMACS_NS = u"https://www.texmacs.org/"
+TEXMACS_OLD_NS = u"http://www.texmacs.org/"
 SVG_NS = u"http://www.w3.org/2000/svg"
 
 
@@ -144,6 +145,14 @@ def get_equation_code(svg_name):
         tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_NS, ''))
         if '{%s}texmacsstyle'%TEXMACS_NS in node.attrib: #further contains styling info
             tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_NS, ''))
+        else:
+            tm_style =''
+        return ('', tm_equation, tm_style)
+
+    elif '{%s}texmacscode'%TEXMACS_OLD_NS in node.attrib: # that group contains texmacs data
+        tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_OLD_NS, ''))
+        if '{%s}texmacsstyle'%TEXMACS_OLD_NS in node.attrib: #further contains styling info
+            tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_OLD_NS, ''))
         else:
             tm_style =''
         return ('', tm_equation, tm_style)
