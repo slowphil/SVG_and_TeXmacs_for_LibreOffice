@@ -7,7 +7,7 @@
 Global g_MasterScriptProvider
 &apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
 &apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
-Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.2.oxt|python|&quot;
+Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.3.oxt|python|&quot;
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
 Function getMasterScriptProvider()
@@ -469,13 +469,17 @@ sub insert_svg (cURL as String)
     oShapeSize = oShapetmp.Graphic.Size100thMM
     &apos;oShapeSize = oShapetmp.actualsize
     oShape.setSize(oShapeSize)
-  
+    oShape.size.height = oShapetmp.size.height
+    oShape.size.Width = oShapetmp.size.Width
+    oShape.Graphic.Size100thMM.height=oShapetmp.Graphic.Size100thMM.height
+    oShape.Graphic.Size100thMM.width=oShapetmp.Graphic.Size100thMM.width
+
+      
     oText= oCurs.getText()
     oText.insertTextContent(oCurs, oShape, false)
     oDoc.getDrawPage().remove(oShapetmp)
   
   
-    oShape.IsSyncHeightToWidth=True
     oShape.TopMargin = 0
     oShape.BottomMargin = 0
     oShape.VertOrient = 0
@@ -483,6 +487,9 @@ sub insert_svg (cURL as String)
     dim baselineoffset as Double
     baselineoffset = 1- val(params(2))
     oShape.VertOrientPosition = - baselineoffset * oShape.Size.Height
+    oShape.IsSyncHeightToWidth=True
+    oShape.IsSyncWidthToHeight=True
+    
 
   end if
 
