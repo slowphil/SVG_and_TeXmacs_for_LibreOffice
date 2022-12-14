@@ -1,22 +1,38 @@
 # SVG and TeXmacs extension for LibreOffice ([direct download](https://github.com/slowphil/SVG_and_TeXmacs_for_LibreOffice/releases/latest))
 
+
+__The purpose of this extension is dual__ 
+
+* __Provide a fully GUI equation editor for LO__
+
+With this extension, one uses the Free and Open Source software GNU [TeXmacs](http://www.texmacs.org) to __directly enter equations in their final visual form__, using an extremely flexible and well though-out combination of toolbars, menus, and keyboard shortcuts...  And this can even be customized!
+
+With this extension there is no need to know anything of TeX/LaTeX for obtaining beautiful equations in LO such as
+
+![](samples/sample.svg)
+
+(Also check the [samples](https://github.com/slowphil/SVG_and_TeXmacs_for_LibreOffice/tree/master/samples)), and unlike with LibreOffice Math or the Textmath extension, with TeXmacs you simply cannot make a syntax error while entering your equations!
+
+
+* __Eable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).
+
 Although LO has a pretty good support for SVG, when you copy a drawing in Inkscape it is disappointingly pasted as a bitmap in LO and it is not even possible to use "paste special" to get the vector format.
 
-__The purpose of this extension is to enable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).
-
-In addition, such SVG support makes it possible to use __GNU [TeXmacs](http://www.texmacs.org)__ as a __fully GUI equation editor__ for LO (TeXmacs' name is truly misleading as *it does **not** require knowing any TeX/LaTeX*). Such equations appear as SVG images but they are fully re-editable.
+With this extension, there is no need to go through a file for LO to exchange SVG with other apps. Equations appear as SVG images in LO but they are fully re-editable.
 
 ### Additional features : 
 * MathType equations (metafile drawings or OLE) can be converted to TeXmacs.
-* plain Latex markup in Writer can be converted to a TeXmacs equation.
-* the conversion of TexMaths equations will soon be supported too.
+* plain Latex markup in Writer can be converted to a TeXmacs equation (the conversion of TexMaths equations could easily be supported too - contributions welcome). Hence, if you have Latex material at hand or are proficient typing Latex, this is not wasted!
+
 
 ## How it works:
 The Copying and Pasting of SVG is not (not yet?) transparently integrated with the standard edit menu, and keyboard shortcuts.
 After installation, in Writer, Draw and Impress you'll have a toolbar with 3 buttons that implement the functionalities of the extension:
 * Paste SVG ![Paste SVG](LO-PasteSvg-icon_16.png)
 * Copy SVG ![Copy SVG](LO-CopySvg-icon_16.png)
-* Edit TeXmacs ![TeXmacs](LO-TeXmacs-icon_16.png)
+* Edit TeXmacs ![TeXmacs](LO-TeXmacs-icon_16.png)  
+
+Once the extension installed you can define your own menu (or contextual menu) entries, and/or keyboard shortcuts, if desired. The main macros you woud target are `paste_svg` and `edit_texmacs` inside the `TexmacsInkscape` Basic library. 
 
 
 ## Requirements
