@@ -7,7 +7,7 @@
 Global g_MasterScriptProvider
 &apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
 &apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
-Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.3.oxt|python|&quot;
+Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.5.oxt|python|&quot;
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
 Function getMasterScriptProvider()
@@ -18,8 +18,7 @@ Function getMasterScriptProvider()
   getMasterScriptProvider = g_MasterScriptProvider
 End Function
 
-Function PythonCallTexmacs(tmpsvg as String, latex as String, _
-            optional texmacscode as string,  optional texmacsstyle as string)
+Function PythonCallTexmacs(tmpsvg as String, latex as String, fontheight as string)
   if ismissing(texmacscode) then
     texmacscode = &quot;&quot;
     texmacsstyle = &quot;&quot;
@@ -31,7 +30,7 @@ Function PythonCallTexmacs(tmpsvg as String, latex as String, _
   secondArg = Array()
   thirdArg = Array()
   &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-  result = s.invoke(Array(latex, tmpsvg, texmacscode, texmacsstyle), secondArg, thirdArg)
+  result = s.invoke(Array(latex, tmpsvg, fontheight), secondArg, thirdArg)
   PythonCallTexmacs = ConvertToURL(result)
 End Function
 
@@ -94,33 +93,53 @@ End Function
 &apos; passing different info to texmacs
 &apos; depending on what is selected
 &apos;************************************
+Function current_font_height() as string
+  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String, oSel as Variant
+  oDoc = ThisComponent
+  oDocCtrl = oDoc.getCurrentController()
+  doctype = GetDocumentType( oDoc)
+
+  If doctype= &quot;swriter&quot; then &apos;what is the current font height?
+    &apos;https://forum.openoffice.org/en/forum/viewtopic.php?p=269557&amp;sid=2ca08d3bfe2c70308d1fe1ba5d5984e1#p269557
+    &apos;https://wiki.openoffice.org/wiki/Writer/API/View_cursor
+    &apos;https://stackoverflow.com/questions/49640951/libreoffice-writer-macro-change-font-size
+    oSel = oDocCtrl.getSelection()
+    current_font_height = CStr(oSel.Anchor.CharHeight)
+  Else 
+    current_font_height = &quot;&quot;
+  endif
+end function
+
 
 Sub edit_texmacs()
   Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
   oDoc = ThisComponent
   oDocCtrl = oDoc.getCurrentController()
+  doctype = GetDocumentType( oDoc)
+  &apos;print &quot;doctype&quot;, doctype
+
   dim ret as String
   If isEmpty(oDocCtrl.selection()) Then
     &apos;Nothing selected : new equation
-    ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;)
+    ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;, current_font_height())
   Else
     Dim oSelection as Variant, oShape as Variant
     oSelection = oDocCtrl.getSelection()
     oShape = oSelection(0)
     If (oShape.ImplementationName=&quot;SwXTextRange&quot;) then
       &apos; Selection is text, presumably it&apos;s latex code we want to convert (in writer)
-      ret = PythonCallTexmacs(&quot;&quot; , oShape.String )
+      ret = PythonCallTexmacs(&quot;&quot; , oShape.String ,  CStr(oShape.CharHeight))
     Elseif ((oShape.ImplementationName &lt;&gt; &quot;SvxShapeText&quot;) and _
         ( oShape.ImplementationName &lt;&gt; &quot;SwXTextGraphicObject&quot;)) _
         or InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 then
-      &apos; Is selection is NOT some kind of graphics shape we handle : do not destroy it
+      &apos; This selection is NOT some kind of graphics shape we handle : do not destroy it
       MsgBox &quot;Selection is not recognized as an equation&quot;
       Exit Sub
     elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
       &apos; Selection is wmf or OLE, presumably a Mathtype equation
       dim MTlatex
       MTlatex = extract_wmf()
-      ret = PythonCallTexmacs(&quot;&quot;, MTlatex)
+      ret = PythonCallTexmacs(&quot;&quot;, MTlatex, current_font_height())
       &apos;ElseIf oShape.UserDefinedAttributes.hasByName(&quot;texmacscode&quot;) then
       &apos;it&apos;s a gdi or svg with texmacs code
       &apos;on return it will be an svg in both cases
@@ -135,7 +154,7 @@ Sub edit_texmacs()
       Dim tempf, cURL as String
       tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
       save_tmp_svg(oShape,tempf)
-      ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;)
+      ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;,current_font_height())
     Else
       MsgBox &quot;Sorry, cannot reedit this type of image&quot;
       Exit Sub
@@ -232,12 +251,12 @@ Function get_svg_tm_params( cUrl as string) as variant
      get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
      exit Function
   end if
-  svgText = Mid( svgText, InStr( svgText, &quot;&lt;g&quot;))
-  svgText = Mid( svgText, 1, InStr( svgText, &quot;&gt;&quot;)+1)
-  If InStr( svgText, &quot;texmacscode&quot;)=0 then
-    get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
-    exit Function
-  end if
+  &apos;svgText = Mid( svgText, InStr( svgText, &quot;&lt;g&quot;))
+  &apos;svgText = Mid( svgText, 1, InStr( svgText, &quot;&gt;&quot;)+1)
+  &apos;If InStr( svgText, &quot;texmacscode&quot;)=0 then
+  &apos;  get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
+  &apos;  exit Function
+  &apos;end if
   Dim str1() as String, str2(4) as String
   dim texmacscode, texmasstyle,  texmacsbaseline$, latex, preamble
   texmacscode = &quot;&quot;
@@ -263,24 +282,36 @@ Function get_svg_tm_params( cUrl as string) as variant
   get_svg_tm_params = str2
 End Function
 
-Sub getxml_with_calc()
-  print  Val(&quot;10.33&quot;)
-  STOP
-  
-  Dim cURL as String
-  cURL=tempf.Uri
-  Print cURL
-  &apos;this should work except for the bug https://bugs.documentfoundation.org/show_bug.cgi?id=104989
-  &apos;dim svc, XML_String, Lipsum
-  &apos;svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
-  &apos;XML_String = svc.callFunction(&quot;WEBSERVICE&quot;, array(cURL))
-  &apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
-  &apos;array(XML_String, &quot;/*[name()=&apos;svg&apos;]/*[name()=&apos;g&apos;]/@*[local-name()=&apos;texmacscode&apos;]&quot;))
-  &apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
-  &apos;array(XML_String, &quot;//@*[local-name()=&apos;texmacsbaseline&apos;]&quot;))
-  &apos;Print Lipsum
+&apos;Sub Main
+&apos;svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
+&apos;XML_String = svc.callFunction(&quot;SERVICE&quot;,array( &quot;file:///tmp/sample.svg&quot;))
+&apos;XML_String = svc.callFunction(&quot;WEBSERVICE&quot;,array(&quot;http://www.lipsum.com/feed/xml?amount=2&amp;what=paras&amp;start=Yes&quot;))
 
-End Sub
+&apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, array(XML_String, &quot;/feed/lipsum&quot; ))
+&apos;Print Lipsum
+&apos;End Sub
+
+
+
+&apos;Sub getxml_with_calc()
+  &apos;print  Val(&quot;10.33&quot;)
+  &apos;STOP
+  
+&apos;  Dim cURL as String
+&apos;  &apos;cURL=tempf.Uri
+&apos;  cURL = &quot;file:///tmp/sample.svg&quot;
+&apos;  &apos;Print cURL
+&apos;  &apos;this should work except for the bug https://bugs.documentfoundation.org/show_bug.cgi?id=104989
+&apos;  dim svc, XML_String, Lipsum
+&apos;  svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
+&apos;  XML_String = svc.callFunction(&quot;WEBSERVICE&quot;, array(cURL))
+&apos;  Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
+&apos;  array(XML_String, &quot;/*[name()=&apos;svg&apos;]/*[name()=&apos;g&apos;]/@*[local-name()=&apos;texmacscode&apos;]&quot;))
+&apos;  Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
+&apos;  array(XML_String, &quot;//@*[local-name()=&apos;texmacsbaseline&apos;]&quot;))
+&apos;  Print Lipsum
+
+&apos;End Sub
 
 &apos;************************************
 &apos;Insert SVG is the last step of paste
@@ -469,12 +500,7 @@ sub insert_svg (cURL as String)
     oShapeSize = oShapetmp.Graphic.Size100thMM
     &apos;oShapeSize = oShapetmp.actualsize
     oShape.setSize(oShapeSize)
-    oShape.size.height = oShapetmp.size.height
-    oShape.size.Width = oShapetmp.size.Width
-    oShape.Graphic.Size100thMM.height=oShapetmp.Graphic.Size100thMM.height
-    oShape.Graphic.Size100thMM.width=oShapetmp.Graphic.Size100thMM.width
-
-      
+  
     oText= oCurs.getText()
     oText.insertTextContent(oCurs, oShape, false)
     oDoc.getDrawPage().remove(oShapetmp)
@@ -489,6 +515,7 @@ sub insert_svg (cURL as String)
     oShape.VertOrientPosition = - baselineoffset * oShape.Size.Height
     oShape.IsSyncHeightToWidth=True
     oShape.IsSyncWidthToHeight=True
+    &apos;oShape.setSize(oShapeSize)
     
 
   end if
@@ -673,7 +700,7 @@ Sub paste_svg
   os.flush()
   os.closeoutput()
   endif
-  PythonFixSVG(tempf.ResourceName)
+  &apos;PythonFixSVG(tempf.ResourceName)
   insert_svg(cURL)
 end sub
 
@@ -782,5 +809,6 @@ sub converttogdi()&apos;shape as object, frame as object)
   oShape.UserDefinedAttributes = oldUserData
 
 end sub
+
 
 </script:module>

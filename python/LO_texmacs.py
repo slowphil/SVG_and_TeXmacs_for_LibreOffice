@@ -3,7 +3,7 @@
 """
 *******************************************************************************
 * Texmacs extension for LibreOffice
-* COPYRIGHT  : (C) 2017-2021 Philippe JOYEZ and the TeXmacs team
+* COPYRIGHT  : (C) 2017-2022 Philippe JOYEZ
 *******************************************************************************
 * This software falls under the GNU general public license version 3 or later.
 * It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
@@ -81,7 +81,7 @@ TEXMACS_OLD_NS = u"http://www.texmacs.org/"
 SVG_NS = u"http://www.w3.org/2000/svg"
 
 
-tm_file="<TeXmacs|1.99.5>\n\n<style|generic>\n\n<\\body>\n %s \n\n</body>\n\n<\\initial>\n %s \n\n</initial>"
+tm_file="<TeXmacs|1.99.5>\n\n<style|%s>\n\n<\\body>\n %s \n\n</body>\n\n<\\initial>\n %s \n\n</initial>"
 tm_dummy_equation="<\equation*>\n    1+1\n  </equation*>\n"
 tm_no_equation="\\;\n"
 tm_scheme_cmd_line_args =  '(begin (lazy-plugin-force) (equ-edit-cmdline) %s) '
@@ -100,30 +100,42 @@ tmp_base = 'LO_edit_tmp.tm'
 tmp_name = os.path.join(tmp_path,tmp_base)
 
 
-def tm_equation(latex_code, svg_file, tm_equation, tm_style):
+def tm_equation(latex_code, svg_file, base_font_size):
     """create the temporary tm file according to the data provided on input
-       then call texmacs"""
+       then call texmacs
+       This function is called from Basic"""
     latex_code = latex_code.replace("\\","\\\\")
     if svg_file != '' :
         # Find equation and how to modify it
-        latex_code, tm_equation, tm_style = get_equation_code(svg_file)
-        scheme_cmd = tm_scheme_cmd_line_args % ''
-    elif tm_equation != "" :
-        tm_equation = string_unescape(tm_equation)
-        tm_style = string_unescape(tm_style)
+        latex_code, tm_equation, tm_style, tm_style2 = get_equation_code(svg_file)
         scheme_cmd = tm_scheme_cmd_line_args % ''
     elif latex_code == '' :
         tm_equation, tm_style = (tm_dummy_equation, tm_no_style)
+        tm_style2 = 'generic'
         scheme_cmd = tm_scheme_cmd_line_args % ''
     else :
         tm_equation, tm_style = (tm_no_equation, tm_no_style)
+        tm_style2 = 'generic'
         # build full scheme command line command
         scheme_cmd = tm_scheme_cmd_line_args % (tm_extra_latex_cmd_line_args % latex_code)
-       
+
+    if  base_font_size != '' :
+        """calling from writer, we adapt the font size in TeXmacs"""
+        pos = tm_style.find('font-base-size') 
+        if pos == -1 :
+            pos = tm_style.find('</collection>')
+            if pos >= 0 :
+                tm_style = tm_style[:pos] + '<associate|font-base-size|'+base_font_size+'>'+tm_style[pos:]
+            else :
+                tm_style = '<collection|<associate|font-base-size|'+base_font_size+'>>'
+        else :
+            pos2 = tm_style.find('|',pos) +1
+            pos3 = tm_style.find('>',pos2)
+            tm_style = tm_style[:pos2] +base_font_size+tm_style[pos3:] 
     # call texmacs for editing
     svg_name = tmp_name + ".svg" #if successful texmacs creates that svg file
     try_remove(svg_name)
-    call_texmacs(scheme_cmd, tm_equation, tm_style, latex_code)
+    call_texmacs(scheme_cmd, tm_equation, tm_style, tm_style2, latex_code)
     try_remove(tmp_name)
     if os.path.isfile(svg_name):
         return svg_name
@@ -137,36 +149,43 @@ def get_equation_code(svg_name):
     f.close()
     #inkex.debug("file read  "+svg_name)
     root = tree.getroot()
-    node = root.find('{%s}g' % SVG_NS) #by construction the equation is in the first group 
-    if node is None :
-        return ('', tm_dummy_equation, tm_no_style)
-    elif '{%s}texmacscode'%TEXMACS_NS in node.attrib: # that group contains texmacs data
-        
+    node = root.find('.//{%s}g[@{%s}texmacscode]' % (SVG_NS, TEXMACS_NS)) 
+    # https://www.reddit.com/r/learnpython/comments/gp3ph1/find_element_whose_attribute_contains_a_value_in/?utm_source=share&utm_medium=web2x&context=3
+    if node is not None:
         tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_NS, ''))
-        if '{%s}texmacsstyle'%TEXMACS_NS in node.attrib: #further contains styling info
+        if '{%s}texmacsstyle'%TEXMACS_NS in node.attrib: #contains styling info (fonts , font size...)
             tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_NS, ''))
         else:
             tm_style =''
-        return ('', tm_equation, tm_style)
-
-    elif '{%s}texmacscode'%TEXMACS_OLD_NS in node.attrib: # that group contains texmacs data
-        tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_OLD_NS, ''))
-        if '{%s}texmacsstyle'%TEXMACS_OLD_NS in node.attrib: #further contains styling info
-            tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_OLD_NS, ''))
+        if '{%s}texmacsstyle2'%TEXMACS_NS in node.attrib: #further contains document style info
+            tm_style2 = string_unescape(node.attrib.get('{%s}texmacsstyle2' % TEXMACS_NS, ''))
         else:
-            tm_style =''
-        return ('', tm_equation, tm_style)
+            tm_style2 ='generic'
+        return ('', tm_equation, tm_style, tm_style2)
 
-    elif '{%s}text'%TEXTEXT_NS in node.attrib:  #implements Textext conversion to TeXmacs
-        latex_code = node.attrib.get('{%s}text' % TEXTEXT_NS, '')
-        return (latex_code, tm_no_equation, tm_no_style)
+    else : 
+        node = root.find('.//{%s}g[@{%s}texmacscode]' % (SVG_NS, TEXMACS_OLD_NS)) 
+        if node is not None:
+            tm_equation = string_unescape(node.attrib.get('{%s}texmacscode' % TEXMACS_OLD_NS, ''))
+            if '{%s}texmacsstyle'%TEXMACS_OLD_NS in node.attrib: #further contains styling info
+                tm_style = string_unescape(node.attrib.get('{%s}texmacsstyle' % TEXMACS_OLD_NS, ''))
+            else:
+                tm_style =''
+            return ('', tm_equation, tm_style, 'generic')
 
+        else :
+            node = root.find('.//{%s}g[@{%s}text]' % (SVG_NS, TEXTEXT_NS)) 
+            if node is not None: #implements Textext conversion to TeXmacs
+                latex_code = node.attrib.get('{%s}text' % TEXTEXT_NS, '')
+                return (latex_code, tm_no_equation, tm_no_style, 'generic')
+            else :
+                return ('', tm_dummy_equation, tm_no_style, 'generic')
 
-def call_texmacs(scheme_cmd, equ, styl, latex):
+def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
     """" handle various ways of calling and communicating with texmacs """
     f_tmp = open(tmp_name, 'wb') # create a temporaty tm file that texmacs will edit
     try:
-        f_tmp.write((tm_file %( equ, styl)).encode("iso-8859-1")) #insert equation to be edited in file (blank in textext case)
+        f_tmp.write((tm_file %(styl2, equ, styl)).encode("iso-8859-1")) #insert equation to be edited in file (blank in textext case)
     finally:
         f_tmp.close()
 
@@ -320,7 +339,8 @@ g_exportedScripts = tm_equation,
 
 if __name__ == u'__main__':
     """allow runing the script standalone for debugging"""
-    tm_equation("", "/tmp/test.svg", "", "")
+    #tm_equation("", "/tmp/test.svg", "", "")
     #tm_equation(r"\frac{a}{b}", "", "", "")
+    print( get_equation_code("/tmp/sample.svg"))
     
 
