@@ -19,10 +19,6 @@ Function getMasterScriptProvider()
 End Function
 
 Function PythonCallTexmacs(tmpsvg as String, latex as String, fontheight as string)
-  if ismissing(texmacscode) then
-    texmacscode = &quot;&quot;
-    texmacsstyle = &quot;&quot;
-  end if
   scriptName = &quot;tm_equation&quot;
   fullURI = URL_Main &amp; &quot;LO_texmacs.py$&quot; &amp; scriptName &amp; URL_Args
   m = getMasterScriptProvider()
@@ -33,6 +29,19 @@ Function PythonCallTexmacs(tmpsvg as String, latex as String, fontheight as stri
   result = s.invoke(Array(latex, tmpsvg, fontheight), secondArg, thirdArg)
   PythonCallTexmacs = ConvertToURL(result)
 End Function
+
+Function PythonCallTexmacsMml(tmpmml as String)
+  scriptName = &quot;really_call_texmacs&quot;
+  fullURI = URL_Main &amp; &quot;LO_texmacs.py$&quot; &amp; scriptName &amp; URL_Args
+  m = getMasterScriptProvider()
+  s = m.GetScript(fullURI)
+  secondArg = Array()
+  thirdArg = Array()
+  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
+  result = s.invoke(Array(tmpmml, &quot;&quot;,&quot;&quot;), secondArg, thirdArg)
+  PythonCallTexmacsMml = ConvertToURL(result)
+End Function
+
 
 Function PythonMTtoLatex(tmpwmf as String)
   scriptName = &quot;MTtoLatex&quot;
@@ -88,11 +97,159 @@ Function PythonFixSVG (svgfile as String)
   &apos;PythonFixSVG = result
 End Function
 
-&apos;************************************
+&apos;*********************************************************************
 &apos; handling texmacs functionality
 &apos; passing different info to texmacs
 &apos; depending on what is selected
 &apos;************************************
+
+Sub edit_texmacs() 
+  tD=ThisComponent
+  dim iswriter as Boolean, isdraw_or_impress as Boolean
+  iswriter = td.SupportsService(&quot;com.sun.star.text.TextDocument&quot;)
+  isdraw_or_impress = (td.SupportsService(&quot;com.sun.star.drawing.DrawingDocument&quot;) or _
+           td.SupportsService(&quot;com.sun.star.presentation.PresentationDocument&quot;))
+  
+  tSel=tD.CurrentSelection
+  &apos;xray tSel
+  tS=tSel(0)
+  
+  dim sfa, tempf, latex$
+  sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
+  tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
+  
+  
+  If isnull(tS) then
+   &apos;create new texmacs equation from scratch
+      ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;, current_font_height())
+      insert_svg(ret)
+  
+  elseIf isdraw_or_impress and tSel.SupportsService(&quot;com.sun.star.drawing.ShapeCollection&quot;) then
+    &apos;tS.ImplementationName == &quot;SvxShapeText&quot; when selection non empty
+    if tS.SupportsService(&quot;com.sun.star.drawing.OLE2Shape&quot;) then
+      if  tS.EmbeddedObject.SupportsService( &quot;com.sun.star.comp.embed.OleEmbeddedObject&quot;) Then
+        &apos;MsgBox( &quot;Selection is non-LO OLE, presumably a Mathtype equation&quot;)
+        &apos;Model                     object                            &lt;empty&gt;
+        &apos;UINameSingular            string            &quot;embedded object (OLE)&quot;
+        &apos;ShapeType                 string   &quot;com.sun.star.drawing.OLE2Shape&quot;
+        wmf_url =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; tD.RuntimeUID &amp; &quot;/ObjectReplacements/&quot; &amp; _
+                   tS.EmbeddedObject.EntryName)
+        FileCopy(wmf_url, tempf.Uri)
+        latex = PythonMTtoLatex(tempf.ResourceName) 
+        ret = PythonCallTexmacs(&quot;&quot;,latex,&quot;&quot;)
+        insert_svg(ret)
+  
+         
+      elseif tS.EmbeddedObject.SupportsService( &quot;com.sun.star.comp.embed.OCommonEmbeddedObject&quot;) _ 
+       and tS.Model.SupportsService(&quot;com.sun.star.formula.FormulaProperties&quot;) then
+          &apos;MsgBox( &quot;Selection is LO Math equation&quot;)
+          &apos; Selection is LO Math; 
+          &apos; it embeds an mml version that we send to TeXmacs as html
+          &apos;UINameSingular            string            &quot;embedded object (OLE)&quot;
+          &apos;ShapeType                 string   &quot;com.sun.star.drawing.OLE2Shape&quot;
+          formula_url =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; tD.RuntimeUID &amp; &quot;/&quot; &amp; _
+                   tS.EmbeddedObject.EntryName &amp; &quot;/content.xml&quot;)
+          tempp= tempf.ResourceName
+          tempfsplit= Split(tempp, &quot;.&quot;)
+          tmpExt = tempfsplit(Ubound(tempfsplit)) &apos; ext = &quot;.tmp&quot;
+          htmlf = Left(tempp, Len(tempp) - Len(tmpExt) -1) &amp; &quot;.html&quot;
+          FileCopy(formula_url, ConvertToUrl(htmlf))
+          PythonCallTexmacsMml( htmlf)
+          Kill (htmlf)
+          insert_svg( ConvertToUrl(htmlf &amp; &quot;.svg&quot;))
+      else 
+        MsgBox( &quot;unhandled OLE object, cannot convert to Texmacs equation&quot;)
+      endif
+    elseif  tS.SupportsService(&quot;com.sun.star.drawing.GraphicObjectShape&quot;) then
+      sfa.writefile(tempf.ResourceName, tS.GraphicStream)
+      if (tS.UINameSingular = &quot;SVG&quot; or tS.Graphic.MimeType = &quot;image/svg+xml&quot;) then 
+        &apos;UINameSingular            string                              &quot;SVG&quot;
+        &apos;ShapeType and Model are not defined properties
+        &apos;tS.Graphic.MimeType                  string                    &quot;image/svg+xml&quot;
+        &apos;MsgBox( &quot;Selection is SVG, probably texmacs equation&quot;)
+        ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;,&quot;&quot;)
+        insert_svg(ret)
+      elseif  tS.Graphic.MimeType = &quot;image/x-wmf&quot; then 
+        &apos;MsgBox( &quot;Selection is WMF, maybe Mathtype equation&quot;)
+        latex = PythonMTtoLatex(tempf.ResourceName) 
+        ret = PythonCallTexmacs(&quot;&quot;,latex,&quot;&quot;)
+        insert_svg(ret)
+        
+      else
+        MsgBox(&quot;Sorry, this selection cannot be transformed to a TeXmacs equation.&quot;)
+      endif
+    endif
+  elseIf iswriter then
+    if tS.SupportsService(&quot;com.sun.star.text.TextEmbeddedObject&quot;) then
+      if isempty(tS.Model) then
+        &apos;for MathThype
+        &apos;FrameStyleName            string                              &quot;OLE&quot;   
+        &apos;Graphic                   object                            &lt;error&gt;  may be void 
+        &apos;GraphicURL                string                            &lt;empty&gt;  may be void
+        &apos;Model                     object                            &lt;empty&gt;  read-only, may be void
+        &apos;ShapeType                 string                       &quot;FrameShape&quot;  (get), read-only
+        &apos;MsgBox( &quot;Selection is maybe mathtype OLE equation&quot;)
+         wmf_url =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; tD.RuntimeUID &amp; &quot;/ObjectReplacements/&quot; &amp; _
+                   tS.EmbeddedObject.EntryName)
+         FileCopy(wmf_url, tempf.Uri)
+         latex = PythonMTtoLatex(tempf.ResourceName) 
+         ret = PythonCallTexmacs(&quot;&quot;,latex,CStr(tS.Anchor.CharHeight))
+         insert_svg(ret)
+
+
+      elseif tS.Model.SupportsService(&quot;com.sun.star.formula.FormulaProperties&quot;) then
+        &apos;MsgBox( &quot;Selection is LO Math equation&quot;)  
+        &apos;for LO formula :
+        &apos;FrameStyleName            string                          &quot;Formula
+        &apos;Model                     object                                     read-only, may be void 
+        &apos;ShapeType                 string                       &quot;FrameShape&quot;  (get), read-only
+        &apos;Graphic                   object                            &lt;error&gt;  may be void 
+        formula_url =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; tD.RuntimeUID &amp; &quot;/&quot; &amp; _
+                 tS.EmbeddedObject.EntryName &amp; &quot;/content.xml&quot;)
+        tempp= tempf.ResourceName
+        tempfsplit= Split(tempp, &quot;.&quot;)
+        tmpExt = tempfsplit(Ubound(tempfsplit)) &apos; ext = &quot;.tmp&quot;
+        htmlf = Left(tempp, Len(tempp) - Len(tmpExt) -1) &amp; &quot;.html&quot;
+        FileCopy(formula_url, ConvertToUrl(htmlf))
+        PythonCallTexmacsMml( htmlf)
+        Kill (htmlf)
+        insert_svg( ConvertToUrl(htmlf &amp; &quot;.svg&quot;))
+      endif
+
+      
+    elseif tS.SupportsService(&quot;com.sun.star.text.TextGraphicObject&quot;) then
+       &apos;ça peut être un SVG TeXmacs ou un WMF mathtype
+       &apos;dans les deux cas, pas moyen de trouver le fichier via les properties
+       &apos; on récupère le graphique en le copiant dans un dessin via save_tmp_svg 
+        &apos;Dim tempf, cURL as String
+        tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
+        save_tmp_svg(tS,tempf)
+      If (tS.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
+        &apos;MsgBox( &quot;Selection is probably TeXmacs equation&quot;)  
+        ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;,CStr(tS.Anchor.CharHeight))
+        insert_svg(ret)
+          
+      elseif (tS.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
+        &apos;MsgBox( &quot;Selection is wmf, maybe mathtype equation&quot;)
+        latex = PythonMTtoLatex(tempf.ResourceName)
+        ret = PythonCallTexmacs(&quot;&quot;,latex,CStr(tS.Anchor.CharHeight))
+        insert_svg(ret)
+      else 
+        MsgBox( &quot;Sorry, this selection cannot be transformed to a TeXmacs equation.&quot;)
+      endif
+    elseif tS.SupportsService(&quot;com.sun.star.text.TextRange&quot;) then
+      &apos; Selection is text, presumably it&apos;s latex code we want to convert (in writer)
+      ret = PythonCallTexmacs(&quot;&quot; , tS.String ,  CStr(tS.CharHeight))
+      insert_svg(ret)
+  
+    else 
+      MsgBox( &quot;Sorry, this selection cannot be transformed to a TeXmacs equation.&quot;)
+    endif
+  endif
+
+end sub
+      
+
 Function current_font_height() as string
   Dim oDoc as Variant, oDocCtrl as Variant, doctype as String, oSel as Variant
   oDoc = ThisComponent
@@ -100,71 +257,17 @@ Function current_font_height() as string
   doctype = GetDocumentType( oDoc)
 
   If doctype= &quot;swriter&quot; then &apos;what is the current font height?
-    &apos;https://forum.openoffice.org/en/forum/viewtopic.php?p=269557&amp;sid=2ca08d3bfe2c70308d1fe1ba5d5984e1#p269557
-    &apos;https://wiki.openoffice.org/wiki/Writer/API/View_cursor
     &apos;https://stackoverflow.com/questions/49640951/libreoffice-writer-macro-change-font-size
     oSel = oDocCtrl.getSelection()
     current_font_height = CStr(oSel.Anchor.CharHeight)
   Else 
+    &apos;in Draw or Impress it would be nice to use the current font height
+    &apos;for text boxes, but how to obtain it???
+    &apos;for the moment, leave empty
     current_font_height = &quot;&quot;
   endif
 end function
 
-
-Sub edit_texmacs()
-  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
-  oDoc = ThisComponent
-  oDocCtrl = oDoc.getCurrentController()
-  doctype = GetDocumentType( oDoc)
-  &apos;print &quot;doctype&quot;, doctype
-
-  dim ret as String
-  If isEmpty(oDocCtrl.selection()) Then
-    &apos;Nothing selected : new equation
-    ret = PythonCallTexmacs(&quot;&quot; , &quot;&quot;, current_font_height())
-  Else
-    Dim oSelection as Variant, oShape as Variant
-    oSelection = oDocCtrl.getSelection()
-    oShape = oSelection(0)
-    If (oShape.ImplementationName=&quot;SwXTextRange&quot;) then
-      &apos; Selection is text, presumably it&apos;s latex code we want to convert (in writer)
-      ret = PythonCallTexmacs(&quot;&quot; , oShape.String ,  CStr(oShape.CharHeight))
-    Elseif ((oShape.ImplementationName &lt;&gt; &quot;SvxShapeText&quot;) and _
-        ( oShape.ImplementationName &lt;&gt; &quot;SwXTextGraphicObject&quot;)) _
-        or InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 then
-      &apos; This selection is NOT some kind of graphics shape we handle : do not destroy it
-      MsgBox &quot;Selection is not recognized as an equation&quot;
-      Exit Sub
-    elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
-      &apos; Selection is wmf or OLE, presumably a Mathtype equation
-      dim MTlatex
-      MTlatex = extract_wmf()
-      ret = PythonCallTexmacs(&quot;&quot;, MTlatex, current_font_height())
-      &apos;ElseIf oShape.UserDefinedAttributes.hasByName(&quot;texmacscode&quot;) then
-      &apos;it&apos;s a gdi or svg with texmacs code
-      &apos;on return it will be an svg in both cases
-      &apos; TODO handle TexMath in the same way
-      &apos;dim tmcode, tmstyle
-      &apos;tmcode =  oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
-      &apos;tmstyle =  oShape.UserDefinedAttributes.getByName(&quot;texmacsstyle&quot;).value
-      &apos;ret = PythonCallTexmacs(&quot;&quot;, &quot;&quot;, tmcode, tmstyle )
-      &apos;FIXME the above does not work : it confuses/mixes the different equations, does not remember the last value...
-    elseIf (oShape.Graphic.MimeType = &quot;image/svg+xml&quot;) Then
-      &apos;it&apos;s an svg image
-      Dim tempf, cURL as String
-      tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
-      save_tmp_svg(oShape,tempf)
-      ret = PythonCallTexmacs(tempf.ResourceName,&quot;&quot;,current_font_height())
-    Else
-      MsgBox &quot;Sorry, cannot reedit this type of image&quot;
-      Exit Sub
-    endif
-  endif
-  &apos; print ret
-  if ret &lt;&gt; &quot;&quot; then
-  insert_svg(ret)
-  endif
-end sub
 
 sub save_tmp_svg(oShape as object,tempf as object )
   dim sImageUrl, fileStream, sfa
@@ -187,51 +290,9 @@ sub save_tmp_svg(oShape as object,tempf as object )
   endif
 end sub
 
-Function extract_wmf() as string
-  Dim oDoc as Variant, oDocCtrl as Variant
-  oDoc = ThisComponent
-  oDocCtrl = oDoc.getCurrentController()
-
-  If isEmpty(oDocCtrl.selection()) Then
-    Exit Function
-  End If
-  Dim oSelection as Variant, oShape as Variant
-  oSelection = oDocCtrl.getSelection()
-  oShape = oSelection(0)
-  &apos;print oShape.ImplementationName
-  &apos;xray oShape
-  If InStr( oShape.Dbg_Properties,&quot;SbxOBJECT Graphic;&quot;)=0 Then
-    Exit Function
-  End If
-
-    dim sfa, tempf, cURL$
-    sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
-    tempf = createUnoService(&quot;com.sun.star.io.TempFile&quot;)
-
-
-  If InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0 Then &apos;it&apos;s an OLE object
-    if InStr(oShape.EmbeddedObject.Dbg_Properties, &quot;EntryName&quot;) &lt;&gt;0 Then
-      sImageUrl =ConvertToUrl( &quot;vnd.sun.star.tdoc:/&quot; &amp; oDoc.RuntimeUID &amp; &quot;/&quot; &amp; oShape.EmbeddedObject.EntryName)
-      FileCopy(sImageUrl, tempf.Uri)
-    Else
-      Exit Function
-    End If
-  ElseIf (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
-    &apos; WMFs can also be accessed directly through a Stream:
-    sfa.openFileWrite(tempf.Uri)
-    sfa.writefile(tempf.Uri, oShape.GraphicStream)
-
-  Else
-    Exit Function
-  End If
-
-  dim latex$
-  latex = PythonMTtoLatex(tempf.ResourceName)
-  extract_wmf() = latex
-end Function
-
 Function get_svg_tm_params( cUrl as string) as variant
   &apos; extract texmacs parameters strings from svg (if any)
+  &apos; we need it in writer to obtain the baseline shift 
   dim sfa, filestream, n
   sfa = createUnoService( &quot;com.sun.star.ucb.SimpleFileAccess&quot;)
 
@@ -251,12 +312,6 @@ Function get_svg_tm_params( cUrl as string) as variant
      get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
      exit Function
   end if
-  &apos;svgText = Mid( svgText, InStr( svgText, &quot;&lt;g&quot;))
-  &apos;svgText = Mid( svgText, 1, InStr( svgText, &quot;&gt;&quot;)+1)
-  &apos;If InStr( svgText, &quot;texmacscode&quot;)=0 then
-  &apos;  get_svg_tm_params=array(&quot;&quot;,&quot;&quot;,&quot;0.0&quot;,&quot;&quot;,&quot;&quot;)
-  &apos;  exit Function
-  &apos;end if
   Dim str1() as String, str2(4) as String
   dim texmacscode, texmasstyle,  texmacsbaseline$, latex, preamble
   texmacscode = &quot;&quot;
@@ -282,29 +337,17 @@ Function get_svg_tm_params( cUrl as string) as variant
   get_svg_tm_params = str2
 End Function
 
-&apos;Sub Main
-&apos;svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
-&apos;XML_String = svc.callFunction(&quot;SERVICE&quot;,array( &quot;file:///tmp/sample.svg&quot;))
-&apos;XML_String = svc.callFunction(&quot;WEBSERVICE&quot;,array(&quot;http://www.lipsum.com/feed/xml?amount=2&amp;what=paras&amp;start=Yes&quot;))
-
-&apos;Lipsum = svc.callFunction(&quot;FILTERXML&quot;, array(XML_String, &quot;/feed/lipsum&quot; ))
-&apos;Print Lipsum
-&apos;End Sub
-
-
-
 &apos;Sub getxml_with_calc()
-  &apos;print  Val(&quot;10.33&quot;)
-  &apos;STOP
   
 &apos;  Dim cURL as String
-&apos;  &apos;cURL=tempf.Uri
+&apos;  cURL=tempf.Uri
 &apos;  cURL = &quot;file:///tmp/sample.svg&quot;
+&apos;  cURL = &quot;http://www.lipsum.com/feed/xml?amount=2&amp;what=paras&amp;start=Yes&quot;
 &apos;  &apos;Print cURL
-&apos;  &apos;this should work except for the bug https://bugs.documentfoundation.org/show_bug.cgi?id=104989
 &apos;  dim svc, XML_String, Lipsum
 &apos;  svc = createUnoService( &quot;com.sun.star.sheet.FunctionAccess&quot; ) &apos;Create a service to use Calc functions
 &apos;  XML_String = svc.callFunction(&quot;WEBSERVICE&quot;, array(cURL))
+&apos;UNFORTUNAYELY, this does not wor for a local file:// url
 &apos;  Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
 &apos;  array(XML_String, &quot;/*[name()=&apos;svg&apos;]/*[name()=&apos;g&apos;]/@*[local-name()=&apos;texmacscode&apos;]&quot;))
 &apos;  Lipsum = svc.callFunction(&quot;FILTERXML&quot;, _
@@ -322,6 +365,8 @@ sub insert_svg (cURL as String)
 &apos; insert the svg drawing
   if cURL = &quot;&quot; then
     &apos;nothing to do
+    exit sub
+  elseif not FileExists (cURL) then 
     exit sub
   end if
 
@@ -365,7 +410,7 @@ sub insert_svg (cURL as String)
     if isempty(oShape) then
       replacing = False
       undo.enterUndoContext(&quot;Inserting SVG&quot;)
-    elseIf (InStr( oShape.Dbg_Properties,&quot;EmbeddedObject&quot;) &lt;&gt;0) or _
+    elseIf has_property (oShape,&quot;EmbeddedObject&quot;) or _
         (oShape.Graphic.MimeType = &quot;image/x-wmf&quot;) Then
       &apos;it&apos;s probably a Mathtype equation
       replacing = True
@@ -405,17 +450,24 @@ sub insert_svg (cURL as String)
       &quot;ShadowYDistance&quot;,&quot;SizeProtect&quot;,&quot;Title&quot;, _
       &quot;Transparency&quot;,&quot;UserDefinedAttributes&quot;,&quot;Visible&quot;)&apos;&quot;LayerID&quot;,,&quot;ZOrder&quot;) &apos;&quot;Parent&quot;,&quot;ShearAngle&quot;,,&quot;Transformation&quot;
       &apos; don&apos;t try to memorize Zorder : causes crashes when undoing
-      dim fullproplist, actualproplist(UBound(proplist)) as string, j
-      fullproplist = oShape.Dbg_Properties
+      dim actualproplist(UBound(proplist)) as string, j
+      fullprops = oShape.Dbg_Properties
+      &apos;j = InStr(fullprops, &quot;:&quot;) &apos;Initial colon
+      &apos;If j &gt; 0 Then Mid(fullprops, 1, j, &quot;&quot;) &apos;Remove portion up to the initial colon
+      &apos;fullproplist = split(fullprops,&quot;;&quot;)
+      &apos;for i = LBound(fullproplist) to UBound(fullproplist)
+      &apos;   tmp = Split(Trim(fullproplist(i)), &quot; &quot;)
+      &apos;   fullproplist(i) =tmp( UBound(tmp))
+      &apos;next
+      
       j = 0
       for i = LBound(proplist) to UBound(proplist)
         &apos;print i, proplist(i)
-        if InStr( fullproplist, proplist(i) ) &lt;&gt;0 then
-          actualproplist(j) = proplist(i)
-          props(j) = oShape.getPropertyValue(proplist(i))
-          j = j+1
-        endif
-        
+        if (inStr (fullprops , &quot; &quot; &amp; proplist(i) &amp; &quot;;&quot;) &lt;&gt; 0)  then
+            actualproplist(j) = proplist(i)
+            props(j) = oShape.getPropertyValue(proplist(i))
+            j = j+1
+          endif
       next
       if j&gt;0 then 
          ReDim Preserve actualproplist(j-1) As String
@@ -461,16 +513,27 @@ sub insert_svg (cURL as String)
 
   elseif doctype= &quot;swriter&quot; then
     &apos;xray oShape
-    if  oShape.ImplementationName = &quot;SwXTextGraphicObject&quot;  then
+    dim oVC, oCursor
+    oVC = oDocCtrl.getViewCursor
+
+    &apos;xray oSel
+&apos;    Globalscope.BasicLibraries.LoadLibrary( &quot;MRILib&quot; )
+&apos;    MRI oShape.getanchor().getstart()
+    if  oShape.ImplementationName = &quot;SwXTextGraphicObject&quot; or _
+     oShape.SupportsService(&quot;com.sun.star.text.TextEmbeddedObject&quot;) then
+     
       undo.enterUndoContext(&quot;Replacing Image&quot;)
-  
+      &apos;make selection a textrange object, otherwise the cursor
+      &apos;position may jump when deleting the original equation image 
+      oDocCtrl.select(oShape.getanchor())
+      oSels = oDocCtrl.getSelection()
+      oSel = oSels.getByIndex(0)
+
       dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, Array())
     else
       undo.enterUndoContext(&quot;Inserting SVG&quot;)
     endif
-  
-    dim oVC, oCursor
-    oVC = oDocCtrl.getViewCursor
+    ThisComponent.reformat()
     &apos;xray oVC
     oCurs = oVC.getText.createTextCursorByRange(oVC)
     oCurs.SetString(&quot;&quot;) &apos;clear current selection
@@ -520,39 +583,12 @@ sub insert_svg (cURL as String)
 
   end if
 
-  &apos;********************************
-  &apos;the svg is inserted now finalize
-  &apos;first if it&apos;s a Texmacs equation, add UserDefinedAttributes
-  if params(0) &lt;&gt; &quot;&quot; then
-    Dim oUserData
-    Dim oUserAttr as new com.sun.star.xml.AttributeData
-    &apos;xray oUserAtrr
-    oUserAttr.Type =&quot;CDATA&quot;
-    oUserData = oShape.UserDefinedAttributes
-    dim str2(4) as string
-    str2 = Array(&quot;texmacscode&quot;,&quot;texmacsstyle&quot;,  &quot;texmacsbaseline&quot;, &quot;latex&quot;, &quot;preamble&quot;)
-    for i = 0 to 4
-      If NOT oUserData.hasByName(str2(i)) then
-        oUserAttr.Value = params(i)
-        oUserData.insertByName(str2(i),oUserAttr)
-      End If
-    next i
-    oShape.UserDefinedAttributes = oUserData
-    &apos;xray oUserData
-    &apos;oUser = oUserData.ElementNames
-    &apos;for i= 0 to UBound(oUser)
-    &apos; oDisp =oDisp &amp; oUser(i) &amp; Chr$(10)
-    &apos;next i
-    &apos;msgbox(oDisp,0,&quot;UserDefinedAttributes&quot;)
-    &apos;Print oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
-  end if
-
   undo.leaveUndoContext
 
 end sub
 
 &apos;*************************************
-&apos;handling of SVG theough the Clipboard
+&apos;handling of SVG through the Clipboard
 &apos;*************************************
 
 Global SVGClipboardSource as Variant
@@ -750,65 +786,12 @@ Function GetDocumentType( oDoc as Variant) as String
 End Function
 
 
-Sub getUserDefinedAttributes()
-  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
-  oDoc = ThisComponent
-  oDocCtrl = oDoc.getCurrentController()
-    Dim oSelection as Variant, oShape as Variant
-    oSelection = oDocCtrl.getSelection()
-    oShape = oSelection(0)
-       Dim oUserData
-       Dim oUserAttr as new com.sun.star.xml.AttributeData
-          &apos;xray oUserAtrr
-          &apos;oUserAttr.Type =&quot;CDATA&quot;
-          &apos;oUserAttr.Value = &quot;NewOOo3 macro&quot;
-          oUserData = oShape.UserDefinedAttributes
-&apos;          dim str2(4) as string
-&apos;          str2 = Array(&quot;texmacscode&quot;,&quot;texmasstyle&quot;,  &quot;texmacsbaseline&quot;, &quot;latex&quot;, &quot;preamble&quot;)
-&apos;for i = 0 to 4
-&apos;   If NOT oUserData.hasByName(str2(i)) then
-&apos;        oUserAttr.Value = params(i)
-&apos;        oUserData.insertByName(str2(i),oUserAttr)
-&apos;        oShape.UserDefinedAttributes = oUserData
-&apos;    End If
-&apos;next i
-         &apos; xray oUserData
-          oUser = oUserData.ElementNames
-          for i= 0 to UBound(oUser)
-             oDisp =oDisp &amp; oUser(i) &amp; &quot;  : &quot; &amp;  oShape.UserDefinedAttributes.getByName(oUser(i)).value &amp;Chr$(10)
-          next i
-       msgbox(oDisp,0,&quot;UserDefinedAttributes&quot;)
-      &apos;Print oShape.UserDefinedAttributes.getByName(&quot;texmacscode&quot;).value
+Function has_property (obj as Object, prop as String) as Boolean
+   has_property = (InStr( obj.Dbg_Properties , &quot; &quot; &amp; prop &amp; &quot;;&quot;)  &lt;&gt; 0)
+End Function 
 
-          &apos;xray oUserData
-          oUser = oUserData.ElementNames
-          for i= 0 to UBound(oUser)
-             oDisp =oDisp &amp; oUser(i) &amp; Chr$(10)
-          next i
-       &apos;msgbox(oDisp,0,&quot;UserDefinedAttributes&quot;)
-      &apos;Print oShape.UserDefinedAttributes.getByName(&quot;home&quot;).value
 
-    End Sub
 
-sub converttogdi()&apos;shape as object, frame as object)
-  Dim oDoc as Variant, oDocCtrl as Variant, doctype as String
-  oDoc = ThisComponent
-  oDocCtrl = oDoc.getCurrentController()
-  Dim oSelection as Variant, oShape as Variant
-  oSelection = oDocCtrl.getSelection()
-  oShape = oSelection(0)
-         Dim oldUserData, newusedata
-          oldUserData = oShape.UserDefinedAttributes
-
-    document   = oDocCtrl.Frame
-    dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
-
-      Dispatcher.executeDispatch( oDocCtrl.Frame, &quot;.uno:ConvertIntoMetaFile&quot;, &quot;&quot;, 0, array())
-      oSelection = oDocCtrl.getSelection()
-  oShape = oSelection(0)
-  oShape.UserDefinedAttributes = oldUserData
-
-end sub
 
 
 </script:module>
