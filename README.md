@@ -16,7 +16,7 @@ In spite of its very misleading name, TeXmacs is actually __not at all based on 
 Whenever you select an existing equation in a LO document and call this extension, the equation is converted to a TeXmacs equation. Conversion works for
 
     * LibreOffice Math equations  
-    (Microsoft Equations get converted to that in LibreOffice)
+    (Microsoft Equations imported in LibreOffice become LO Math equations)
 
     * MathType equations (wmf drawings or OLE objects).
     * plain LaTeX markup in Writer.  
