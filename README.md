@@ -5,18 +5,14 @@ You need to prepare documents with equations but are struggling with LO Math, an
 __The purposes of this extension are:__ 
 
 * __Provide an easy, fully GUI, equation editor for LO__  
-With this extension, one uses the Free and Open Source software GNU [TeXmacs](http://www.texmacs.org) to __directly enter equations in their final visual form__, using an extremely flexible and well though-out combination of toolbars, menus, and keyboard shortcuts...  And this can even be customized!
-
->With this extension there is no need to know anything of TeX/LaTeX for obtaining beautiful equations in LO such as
-
->![](samples/sample.svg)
-
->(Also check the [samples](https://github.com/slowphil/SVG_and_TeXmacs_for_LibreOffice/tree/master/samples)).
-
->In spite of its very misleading name, TeXmacs is actually __not at all based on TeX/LaTeX__ ⇒ Unlike with LibreOffice Math or the TextMath extension, with TeXmacs you simply cannot make a syntax error while entering your equations!
+With this extension, one uses the Free and Open Source software GNU [TeXmacs](http://www.texmacs.org) to __directly enter equations in their final visual form__, using an extremely flexible and well though-out combination of toolbars, menus, and keyboard shortcuts...  And this can even be customized!    
+With this extension there is no need to know anything of TeX/LaTeX for obtaining beautiful equations in LO such as  
+![](samples/sample.svg)  
+(Also check the [samples](https://github.com/slowphil/SVG_and_TeXmacs_for_LibreOffice/tree/master/samples)).  
+In spite of its very misleading name, TeXmacs is actually __not at all based on TeX/LaTeX__ ⇒ Unlike with LibreOffice Math or the TextMath extension, with TeXmacs you simply cannot make a syntax error while entering your equations!
 
 
-* __Convert existing equations to TeXmacs equations on-the-fly __  
+* __Convert existing equations to TeXmacs equations on-the-fly__  
 Whenever you select an existing equation in a LO document and call this extension, the equation is converted to a TeXmacs equation. Conversion works for
 
     * LibreOffice Math equations  
@@ -28,11 +24,10 @@ Whenever you select an existing equation in a LO document and call this extensio
 
     * Other equations such as TextMath could olso be converted (contributions welcome)
 
-* __Eable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).  
+* __Enable copy-pasting SVG drawings between LO and Inkscape__ (or any other app that handles SVG).  
 Although LO has a pretty good support for SVG, when you copy a drawing in Inkscape it is disappointingly pasted as a bitmap in LO and it is not even possible to use "paste special" to get the vector format.  
-With this extension, there is no need to go through a file for LO to exchange SVG with other apps.
-
->Equations appear as SVG images in LO (yet, they are fully re-editable).
+With this extension, there is no need to go through a file for LO to exchange SVG with other apps.  
+Equations appear as SVG images in LO (yet, they are fully re-editable).
 
 
 ## How it works:
@@ -70,7 +65,7 @@ This extension is known to work in LibreOffice ⩾ 5.3 in both Linux and Windows
 
 Of course, you need to have TeXmacs installed on your system. 
 
-For the TeXmacs equation editor feature to work with this LibreOffice extension, TeXmacs further needs the `equation-editor plugin` which is not distributed with the official version available at texmacs.org, at this point. The plugin can be installed manually, or one can get one of my texmacs builds incorporating it (see below).
+For the TeXmacs equation editor feature to work with this LibreOffice extension, TeXmacs further needs the `equation-editor plugin` which is not yet distributed with the official version available at texmacs.org, at this point. The plugin can be installed manually, or one can get one of my texmacs builds incorporating it (see below).
 
 You'll also need `pdftocairo` (from Poppler tools) that TeXmacs needs to produce the SVG images.
 
