@@ -35,31 +35,99 @@ them for re-edition, copy/paste, converting mathtype equations ...
 """
 #------------------------------------------------------------------------------
 
-import os, glob, platform, time
+import os, glob, platform, time, uno
 import tempfile, subprocess
 from xml.etree import ElementTree as etree
 
-import socket
+import socket, shutil
 
 IS_WINDOWS = (platform.system() == "Windows")
 #IS_MACOS= sys.platform.startswith('darwin')
 
-if IS_WINDOWS :
-    def Is64Windows():
-        return 'PROGRAMFILES(X86)' in os.environ
+CTX = uno.getComponentContext()
+SM = CTX.getServiceManager()
 
-    def GetProgramFiles32():
-        if Is64Windows():
-            return os.environ['PROGRAMFILES(X86)']
-        else:
-            return os.environ['PROGRAMFILES']
 
-    texmacs_path = os.path.join(GetProgramFiles32(), 'TeXmacs','bin', 'texmacs.exe')
-    if not(os.path.isfile(texmacs_path)):
-        print("TeXmacs not found in the usual location:\n"+texmacs_path+"\nCannot continue, sorry.")
-        raise SystemExit()
+def create_instance(name, with_context=False):
+    if with_context:
+        instance = SM.createInstanceWithContext(name, CTX)
+    else:
+        instance = SM.createInstance(name)
+    return instance
 
-else : texmacs_path ='texmacs' #texmacs needs to be in the path!
+from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
+
+def msgbox(message, title='TeXmacs equation editor', buttons=MSG_BUTTONS.BUTTONS_OK, type_msg='infobox'):
+    """ Create message box
+        type_msg: infobox, warningbox, errorbox, querybox, messbox
+        https://api.libreoffice.org/docs/idl/ref/interfacecom_1_1sun_1_1star_1_1awt_1_1XMessageBoxFactory.html
+    """
+    toolkit = create_instance('com.sun.star.awt.Toolkit')
+    parent = toolkit.getDesktopWindow()
+    mb = toolkit.createMessageBox(parent, type_msg, buttons, title, str(message))
+    return mb.execute()
+
+#https://wiki.documentfoundation.org/Macros/Python_Guide/Useful_functions#Execute_in_other_thread 
+
+
+
+def texmacs_exe_path() :
+  ''' Find texmacs path, save config file to user profile if necessary'''
+
+  #https://www.linux.com/news/openofficeorg-basic-crash-course-saving-user-settings/
+  createUnoService = XSCRIPTCONTEXT.getComponentContext().getServiceManager().createInstance
+  SubstService = createUnoService("com.sun.star.util.PathSubstitution")
+  UserPath = SubstService.substituteVariables("$(user)", True)[7:]   
+  #res = msgbox("UserPath: "+UserPath, title='Where is TeXmacs?')
+  
+  texmacs_path = shutil.which('texmacs') # looking in $PATH
+  if texmacs_path == None :
+    texmacs_path = ""
+  
+  if (texmacs_path == "" ) and os.path.isfile(UserPath+'/texmacs_path.conf'):
+  # try to load from saved config file
+    with open(UserPath+'/texmacs_path.conf', 'r') as f:
+      texmacs_path = f.read()
+      if not(os.path.isfile(texmacs_path)):
+          texmacs_path = ""
+  
+  if (texmacs_path == "" ) and IS_WINDOWS :
+  # try usual windows system path
+        def Is64Windows():
+            return 'PROGRAMFILES(X86)' in os.environ
+    
+        def GetProgramFiles32():
+            if Is64Windows():
+                return os.environ['PROGRAMFILES(X86)']
+            else:
+                return os.environ['PROGRAMFILES']
+    
+        texmacs_path = os.path.join(GetProgramFiles32(), 'TeXmacs','bin', 'texmacs.exe')
+        if not(os.path.isfile(texmacs_path)):
+          texmacs_path = ""
+        
+  if texmacs_path == "":
+  # ask to point to executable (Windows or Appimage)
+    res = msgbox("Cannot locate your TeXmacs executable\nPlease locate it in the next dialog", title='Where is TeXmacs?')
+    # based on https://stackoverflow.com/a/30863692
+    path=None
+    mode=0
+    """
+        read:  `mode in (0, 6, 7, 8, 9)`
+        write `mode in (1, 2, 3, 4, 5, 10)`
+        see: ('''https://api.libreoffice.org/docs/idl/ref/namespacecom_1_1sun_1_1star_1_1ui_1_1dialogs_1_1TemplateDescription.html''' )
+    """
+    #filepicker = createUnoService( "com.sun.star.ui.dialogs.OfficeFilePicker" )
+    filepicker = createUnoService( "com.sun.star.ui.dialogs.FilePicker" ) #this is Os's file picker
+    #if path:
+    #    filepicker.setDisplayDirectory(path )
+    filepicker.initialize( ( mode,) )
+    filepicker.setTitle("Please locate your TeXmacs executable")
+    if filepicker.execute():
+        texmacs_path = filepicker.getFiles()[0][7:] 
+        with open(UserPath+'/texmacs_path.conf', 'w') as f:
+          f.write(texmacs_path)
+  return texmacs_path
 
 #import codecs        
 def string_unescape(s):
@@ -100,7 +168,7 @@ tmp_base = 'LO_edit_tmp.tm'
 tmp_name = os.path.join(tmp_path,tmp_base)
 
 
-def tm_equation(latex_code, svg_file, base_font_size):
+def tm_equation(latex_code="", svg_file="", base_font_size=""):
     """create the temporary tm file according to the data provided on input
        then call texmacs
        This function is called from Basic"""
@@ -220,8 +288,8 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
         clientsocket.sendall(bytes(str(len(bytes(msg,'utf8')))+ '\n'+msg,'utf8'))
         time.sleep(.1)
         data = clientsocket.recv(size)
-#            inkex.debug("recvd: " + str(len(data)) + " bytes")
-#            inkex.debug("recvd:" + data)
+#            print("recvd: " + str(len(data)) + " bytes")
+#            print("recvd:" + data)
         clientsocket.close()
     else :
 
@@ -244,7 +312,7 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
 #  
 # http://code.activestate.com/lists/python-list/446422/
 # https://mail.python.org/pipermail/python-list/2005-March/355623.html
-
+        texmacs_path = texmacs_exe_path()
         if IS_WINDOWS :
             import ctypes
             PIPE_ACCESS_DUPLEX = 0x3
@@ -269,7 +337,7 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
                                              None
                                             )
             if (hPipe == INVALID_HANDLE_VALUE):
-                print("Error in creating Named Pipe")
+                msgbox("Error in creating Named Pipe")
                 return
             cmd = '"'+texmacs_path+'" -x "'+scheme_cmd+'" "'+tmp_name+'" > '+tmPipename
 
@@ -282,7 +350,7 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
             if ((fConnected == 0) and (ctypes.windll.kernel32.GetLastError() == ERROR_PIPE_CONNECTED)):
                 fConnected = 1
             if (fConnected != 1) :
-                print("Could not connect with "+texmacs_path+"\n using named pipe")
+                msgbox("Sorry, could not connect with\n "+texmacs_path+"\n using named pipe", title='TeXmacs equation editor')
                 return
             ERROR_MORE_DATA = 234
             BUFSIZE = 512
@@ -296,7 +364,7 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
                     if ((b"done" in chBuf.value) or (b"cancel" in chBuf.value) ):
                         break
                 elif (ctypes.windll.kernel32.GetLastError() != ERROR_MORE_DATA):
-                    print("error reading from named pipe")
+                    msgbox("error reading from named pipe")
                     break
                 
             ctypes.windll.kernel32.FlushFileBuffers(hPipe)
@@ -305,19 +373,19 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
 
         else : # Linux, MacOS: so much simpler!
             cmd = [texmacs_path,"-x",scheme_cmd , tmp_name]
-        #try:
-            p = subprocess.Popen(cmd, 
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-            while p.poll() is None:
-                output = p.stdout.readline()
-                if ((b"done" in output) or (b"cancel" in output) ):
-                    break
-        #except OSError as e:
-        #    raise RuntimeError("Command %s failed: %s" % (' '.join(cmd), e))
-        #except :
-            #inkex.debug("launching texmacs failed   ")
-        #    print( "launching texmacs failed   ")
+            try:
+                p = subprocess.Popen(cmd, 
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+                while p.poll() is None:
+                    output = p.stdout.readline()
+                    if ((b"done" in output) or (b"cancel" in output) ):
+                        break
+            #except OSError as e:
+            #    raise RuntimeError("Command %s failed: %s" % (' '.join(cmd), e))
+            except :
+                msgbox("launching texmacs failed   ")
+            #    print( "launching texmacs failed   ")
 
 
 def remove_temp_files():
@@ -340,7 +408,8 @@ g_exportedScripts = tm_equation,
 if __name__ == u'__main__':
     """allow runing the script standalone for debugging"""
     #tm_equation("", "/tmp/test.svg", "", "")
-    #tm_equation(r"\frac{a}{b}", "", "", "")
-    print( get_equation_code("/tmp/sample.svg"))
-    
+    tm_equation(r"\frac{a}{b}", "", "", "")
+    #print( get_equation_code("/tmp/sample.svg"))
+        
+
 

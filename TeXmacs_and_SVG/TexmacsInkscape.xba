@@ -4,6 +4,7 @@
 &apos;******************************
 &apos;Interface with pythons scripts
 &apos;******************************
+
 Global g_MasterScriptProvider
 &apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
 &apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
@@ -83,18 +84,6 @@ Function PythonWinCopy (mimetype as String, data as any)
   thirdArg = Array()
   &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
   s.invoke(Array(mimetype, data), secondArg, thirdArg)
-End Function
-
-Function PythonFixSVG (svgfile as String)
-  scriptName = &quot;fix_inkscape_svg&quot;
-  fullURI = URL_Main &amp; &quot;inkscape_paste_edit.py$&quot; &amp; scriptName &amp; URL_Args
-  m = getMasterScriptProvider()
-  s = m.GetScript(fullURI)
-  secondArg = Array()
-  thirdArg = Array()
-  &apos;result = s.invoke(Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), secondArg, thirdArg)
-  result = s.invoke(Array(svgfile), secondArg, thirdArg)
-  &apos;PythonFixSVG = result
 End Function
 
 &apos;*********************************************************************
@@ -736,7 +725,6 @@ Sub paste_svg
   os.flush()
   os.closeoutput()
   endif
-  &apos;PythonFixSVG(tempf.ResourceName)
   insert_svg(cURL)
 end sub
 

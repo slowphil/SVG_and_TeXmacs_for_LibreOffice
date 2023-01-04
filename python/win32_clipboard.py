@@ -37,21 +37,52 @@ __license__ = "CC BY-SA 3.0"
 
 import ctypes
 
+
+from ctypes.wintypes import BOOL, HWND, HANDLE, HGLOBAL, UINT, LPVOID, LPSTR, LPCWSTR
+from ctypes import c_int as int
+from ctypes import c_size_t as SIZE_T
+
 OpenClipboard = ctypes.windll.user32.OpenClipboard
+OpenClipboard.argtypes = HWND,
+OpenClipboard.restype = BOOL
 EmptyClipboard = ctypes.windll.user32.EmptyClipboard
+EmptyClipboard.restype = BOOL
 GetClipboardData = ctypes.windll.user32.GetClipboardData
+GetClipboardData.argtypes = UINT,
+GetClipboardData.restype = HANDLE
 SetClipboardData = ctypes.windll.user32.SetClipboardData
+SetClipboardData.argtypes = UINT, HANDLE
+SetClipboardData.restype = HANDLE
 CloseClipboard = ctypes.windll.user32.CloseClipboard
+CloseClipboard.restype = BOOL
+
 CountClipboardFormats = ctypes.windll.user32.CountClipboardFormats
+CountClipboardFormats.restype = int
 EnumClipboardFormats = ctypes.windll.user32.EnumClipboardFormats
+EnumClipboardFormats.argtypes = UINT,
+EnumClipboardFormats.restype = UINT
+
 GetClipboardFormatName = ctypes.windll.user32.GetClipboardFormatNameA
+GetClipboardFormatName.argtypes = UINT, LPSTR, int
+GetClipboardFormatName.restypes = int
+
 RegisterClipboardFormat = ctypes.windll.user32.RegisterClipboardFormatW
+RegisterClipboardFormat.argtypes = LPCWSTR, 
+RegisterClipboardFormat.restypes = UINT
 CF_UNICODETEXT = 13
 
 GlobalAlloc = ctypes.windll.kernel32.GlobalAlloc
+GlobalAlloc.argtypes = UINT, SIZE_T
+GlobalAlloc.restype = HGLOBAL
 GlobalLock = ctypes.windll.kernel32.GlobalLock
+GlobalLock.argtypes = HGLOBAL,
+GlobalLock.restype = LPVOID
 GlobalUnlock = ctypes.windll.kernel32.GlobalUnlock
+GlobalUnlock.argtypes = HGLOBAL,
 GlobalSize = ctypes.windll.kernel32.GlobalSize
+GlobalSize.argtypes = HGLOBAL,
+GlobalSize.restype = SIZE_T
+
 GMEM_MOVEABLE = 0x0002
 GMEM_ZEROINIT = 0x0040
 
