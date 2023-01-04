@@ -77,7 +77,7 @@ def texmacs_exe_path() :
   #https://www.linux.com/news/openofficeorg-basic-crash-course-saving-user-settings/
   createUnoService = XSCRIPTCONTEXT.getComponentContext().getServiceManager().createInstance
   SubstService = createUnoService("com.sun.star.util.PathSubstitution")
-  UserPath = SubstService.substituteVariables("$(user)", True)[7:]   
+  UserPath = uno.fileUrlToSystemPath(SubstService.substituteVariables("$(user)", True))
   #res = msgbox("UserPath: "+UserPath, title='Where is TeXmacs?')
   
   texmacs_path = shutil.which('texmacs') # looking in $PATH
@@ -124,7 +124,7 @@ def texmacs_exe_path() :
     filepicker.initialize( ( mode,) )
     filepicker.setTitle("Please locate your TeXmacs executable")
     if filepicker.execute():
-        texmacs_path = filepicker.getFiles()[0][7:] 
+        texmacs_path = uno.fileUrlToSystemPath(filepicker.getFiles()[0])
         with open(UserPath+'/texmacs_path.conf', 'w') as f:
           f.write(texmacs_path)
   return texmacs_path

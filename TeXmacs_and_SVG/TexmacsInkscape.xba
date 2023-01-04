@@ -8,7 +8,7 @@
 Global g_MasterScriptProvider
 &apos;Const URL_Main = &quot;vnd.sun.star.script:&quot;
 &apos;Const URL_Args = &quot;?language=Python&amp;location=user&quot;
-Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.5.oxt|python|&quot;
+Const URL_Main = &quot;vnd.sun.star.script:SVG_and_Texmacs-L-0.6.oxt|python|&quot;
 Const URL_Args = &quot;?language=Python&amp;location=user:uno_packages&quot;
 
 Function getMasterScriptProvider()
