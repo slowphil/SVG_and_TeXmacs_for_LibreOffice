@@ -256,7 +256,9 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
         f_tmp.write((tm_file %(styl2, equ, styl)).encode("iso-8859-1")) #insert equation to be edited in file (blank in textext case)
     finally:
         f_tmp.close()
+    really_call_texmacs(tmp_name, scheme_cmd, latex)
 
+def really_call_texmacs(tmp_name, scheme_cmd="", latex=""):
 #try connecting already running texmacs on socket (spares boot-up time)
     size = 1024
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
