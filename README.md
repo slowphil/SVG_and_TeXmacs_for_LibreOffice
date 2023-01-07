@@ -61,11 +61,11 @@ There you can place Texmacs equations inline. Ironically this does not work with
 If you ever change the font size of a document, you'll need to manually update each equation in the document. This implies this extension is suitable only for documents containing a limited number of equations. If you want to write a document with hundreds of equations (say, a PhD thesis), consider using a real scientific word processor like TeXmacs... 
 
 ## Requirements
-This extension is known to work in LibreOffice ⩾ 5.3 in both Linux and Windows. It was not tested in OpenOffice and probably won't work without modifications. If the extension fails to install properly, make sure you have `libreoffice-script-provider-python` installed.
+This extension is known to work in recent LibreOffice in both Linux and Windows (⩾7.0 ? ymmv for earlier versions). It was not tested in OpenOffice and probably won't work without modifications. If the extension fails to install properly, make sure you have `libreoffice-script-provider-python` installed.
 
 Of course, you need to have TeXmacs installed on your system. 
 
-For the TeXmacs equation editor feature to work with this LibreOffice extension, TeXmacs further needs the `equation-editor plugin` which is not yet distributed with the official version available at texmacs.org, at this point. The plugin can be installed manually, or one can get one of my texmacs builds incorporating it (see below).
+For the TeXmacs equation editor feature to work with this LibreOffice extension, TeXmacs further needs the `equation-editor plugin` which will be distributed with the next official version available at texmacs.org. Meanwhile, the plugin can be installed manually, or one can get one of my texmacs builds incorporating it (see below).
 
 You'll also need `pdftocairo` (from Poppler tools) that TeXmacs needs to produce the SVG images.
 
