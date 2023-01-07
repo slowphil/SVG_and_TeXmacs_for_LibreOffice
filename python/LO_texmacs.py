@@ -261,20 +261,22 @@ def call_texmacs(scheme_cmd, equ, styl, styl2, latex):
 def really_call_texmacs(tmp_name, scheme_cmd="", latex=""):
 #try connecting already running texmacs on socket (spares boot-up time)
     size = 1024
-    clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     try:
-        clientsocket.settimeout(1.25)
-        clientsocket.connect(('localhost', 6561))
-        time.sleep(.5)
+        clientsocket = socket.create_connection(('localhost', 6561), timeout=0.25)
+        time.sleep(.1)
         msg='(0 (remote-login "inkscape" "inkscape"))\n'
         clientsocket.sendall(bytes(str(len(bytes(msg,'utf8')))+ '\n'+msg,'utf8'))
         clientsocket.setblocking(1)
         time.sleep(.1)
         msg = clientsocket.recv(size)
-    except : #any error : can't connect (texmacs not running or server not started), no answer,...
+    except Exception as e : 
+        print(e)
         use_socket = False
-        print("use_socket = False")
+        try :
+          clientsocket.close()
+        except :
+          pass
+        #inkex.debug("use_socket = False")
     else:
         if msg.find(b"ready") : use_socket = True
     #login was accepted; continue with socket connection (assume tm-service remote-equ is properly setup)
